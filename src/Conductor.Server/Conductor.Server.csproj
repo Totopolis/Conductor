@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
@@ -19,9 +19,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\shared\LangModel.OpenAi\LangModel.OpenAi.csproj" />
-		<ProjectReference Include="..\..\..\shared\Server.Boot\Server.Boot.csproj" />
-		<ProjectReference Include="..\..\Conductor.Infrastructure\Conductor.Infrastructure\Conductor.Infrastructure.csproj" />
+		<ProjectReference Include="..\..\shared\LangModel.OpenAi\LangModel.OpenAi.csproj" />
+		<ProjectReference Include="..\..\shared\Server.Boot\Server.Boot.csproj" />
+		<ProjectReference Include="..\Conductor.Infrastructure\Conductor.Infrastructure.csproj" />
 	</ItemGroup>
 
 </Project>

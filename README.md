@@ -26,6 +26,8 @@ Reference .NET project in the process orchestration domain area.
 
 11. Domain events: transactional outbox pattern
 
+12. A little bit of "AI"
+
 ## References
 
 - .NET BIBLE https://www.youtube.com/@nickchapsas
