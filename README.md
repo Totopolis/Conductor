@@ -2,27 +2,29 @@
 
 Reference .NET project in the process orchestration domain area.
 
-## Covered topics:
+## Covered topics
 
 1. Clean architecture solution structure (onion)
 
 2. Domain driven design (DDD): entity, valueobject, aggregate, domain event
 
-3. Tests: domain, app, infra, archi
+3. Event based app: MassTransit
 
-4. Configuration, consul, options, options fluentValidators, observabled options
+4. Tests: domain, app, infrastructure (TestContainers), archi
 
-5. Open telemetry: logs, traces and metrics
+5. Configuration, consul, options, options validators, observabled options
 
-6. REPR-pattern: FastEndpoints without HTTPS
+6. Open telemetry: logs, traces and metrics
 
-7. NodaTime use
+7. REPR-pattern: FastEndpoints without HTTPS (presentation layer)
 
-8. Syntax analyzers: cutted codestyle
+8. NodaTime use
 
-9. EF Core with DDD: repository, unit of work
+9. Syntax analyzers: cutted codestyle
 
-10. Domain events: transactional outbox pattern
+10. EF Core with DDD: repository, unit of work
+
+11. Domain events: transactional outbox pattern
 
 ## References
 
@@ -34,8 +36,6 @@ Reference .NET project in the process orchestration domain area.
 
 - Vladimir Khorikov (TDD, DDD): https://enterprisecraftsmanship.com/posts
 
-- https://github.com/vkhorikov/CSharpFunctionalExtensions
+- Functional approach: https://github.com/vkhorikov/CSharpFunctionalExtensions
 
 - HTTP API: https://fast-endpoints.com/
-
-- Process orchestration app: https://camunda.com/
