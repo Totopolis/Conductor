@@ -1,39 +1,15 @@
-﻿using Conductor.Infrastructure;
-using Conductor.Server;
-using Winton.Extensions.Configuration.Consul;
+﻿using Conductor.Server;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services
-    .AddInfrastructureServices(builder.Configuration);
-
-var consulSettings = builder.Configuration
-    .GetSection(ConsulSettings.SectionName)
-    .Get<ConsulSettings>()!;
-
-builder.Configuration
-    .AddConsul($"{consulSettings.ApplicationName}/{consulSettings.EnvironmentName}", opt =>
-    {
-        opt.ConsulConfigurationOptions = cco =>
-        {
-            cco.Address = new Uri(consulSettings.Uri);
-            cco.Token = consulSettings.Token;
-        };
-    })
-    .Build();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+try
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    builder.PreBuild();
+    var app = builder.Build();
+    await app.PostBuild();
+    app.Run();
 }
-
-app.MapGet("/", () => "Hello world").WithOpenApi();
-
-app.Run();
+catch
+{
+    // TODO: serilog to console
+}

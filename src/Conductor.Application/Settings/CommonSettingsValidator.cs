@@ -1,5 +1,12 @@
-﻿namespace Conductor.Application.Settings;
+﻿using FluentValidation;
 
-internal sealed class CommonSettingsValidator
+namespace Conductor.Application.Settings;
+
+internal sealed class CommonSettingsValidator : AbstractValidator<CommonSettings>
 {
+    public CommonSettingsValidator()
+    {
+        RuleFor(x => x.RefreshSecondsWhileDeploy)
+            .GreaterThan(0);
+    }
 }

@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\shared\Settings.Extensions\Settings.Extensions.csproj" />
-    <ProjectReference Include="..\Conductor.Domain\Conductor.Domain.csproj" />
+	  <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
+	  <PackageReference Include="SharpToken" Version="2.0.3" />
   </ItemGroup>
 
 </Project>
