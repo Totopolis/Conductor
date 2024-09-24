@@ -1,4 +1,6 @@
-﻿using Conductor.Domain.Processes;
+﻿using Conductor.Domain.Events;
+using Conductor.Domain.Primitives;
+using Conductor.Domain.Processes;
 using Conductor.Domain.ValueObjects;
 using NodaTime;
 
@@ -94,23 +96,31 @@ public sealed class Deployment : AggregateRoot<DeploymentId>
     {
         ArgumentOutOfRangeException.ThrowIfNotEqual(State, DeploymentState.Draft);
         State = DeploymentState.Transient;
+
+        RaiseDomainEvent(new DeploymentTransient(Id));
     }
 
     public void SetFailed()
     {
         ArgumentOutOfRangeException.ThrowIfNotEqual(State, DeploymentState.Transient);
         State = DeploymentState.Failed;
+
+        RaiseDomainEvent(new DeploymentFailed(Id, "Some error occurs"));
     }
 
     public void SetDeployed()
     {
         ArgumentOutOfRangeException.ThrowIfNotEqual(State, DeploymentState.Transient);
         State = DeploymentState.Deployed;
+
+        RaiseDomainEvent(new DeploymentDeployed(Id));
     }
 
     public void SetDecommissioned()
     {
         ArgumentOutOfRangeException.ThrowIfNotEqual(State, DeploymentState.Deployed);
         State = DeploymentState.Decommissioned;
+
+        RaiseDomainEvent(new DeploymentDecommissioned(Id, "User stop or new deployment in transient"));
     }
 }

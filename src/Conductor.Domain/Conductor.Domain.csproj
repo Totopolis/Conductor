@@ -21,7 +21,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="DomainEvents\" />
 	  <Folder Include="Errors\" />
 	</ItemGroup>
 

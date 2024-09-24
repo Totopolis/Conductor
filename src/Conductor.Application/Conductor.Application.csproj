@@ -11,4 +11,9 @@
     <ProjectReference Include="..\Conductor.Domain\Conductor.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MassTransit.Abstractions" Version="8.2.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+  </ItemGroup>
+
 </Project>

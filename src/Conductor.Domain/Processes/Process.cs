@@ -1,4 +1,5 @@
-﻿using NodaTime;
+﻿using Conductor.Domain.Primitives;
+using NodaTime;
 
 namespace Conductor.Domain.Processes;
 

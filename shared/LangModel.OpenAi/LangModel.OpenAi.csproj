@@ -10,7 +10,7 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
-		<PackageReference Include="Betalgo.OpenAI" Version="8.6.2" />
+		<PackageReference Include="Betalgo.OpenAI" Version="8.7.1" />
 	</ItemGroup>
 
 	<ItemGroup>
