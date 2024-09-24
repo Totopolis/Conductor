@@ -20,13 +20,15 @@ Reference .NET project in the process orchestration domain area.
 
 8. NodaTime use
 
-9. Syntax analyzers: cutted codestyle
+9. Syntax analyzers: cutted codestyle, banned list
 
 10. EF Core with DDD: repository, unit of work
 
 11. Domain events: transactional outbox pattern
 
 12. A little bit of "AI"
+
+13. Docker & CI
 
 ## References
 
@@ -41,3 +43,5 @@ Reference .NET project in the process orchestration domain area.
 - Functional approach: https://github.com/vkhorikov/CSharpFunctionalExtensions
 
 - HTTP API: https://fast-endpoints.com/
+
+- OTEL (RUS): https://www.youtube.com/watch?v=X3faF3xw3m8

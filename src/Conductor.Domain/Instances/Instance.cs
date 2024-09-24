@@ -1,5 +1,6 @@
 ﻿using Conductor.Domain.Deployments;
 using NodaTime;
+using System.Text.Json;
 
 namespace Conductor.Domain.Processes;
 
@@ -10,12 +11,14 @@ public sealed class Instance : AggregateRoot<InstanceId>
         DeploymentId deploymentId,
         ProcessId processId,
         RevisionId revisionId,
-        Instant created) : base(id)
+        Instant created,
+        JsonElement state) : base(id)
     {
         DeploymentId = deploymentId;
         ProcessId = processId;
         RevisionId = revisionId;
         Created = created;
+        State = state;
     }
 
     public DeploymentId DeploymentId { get; init; }
@@ -25,6 +28,8 @@ public sealed class Instance : AggregateRoot<InstanceId>
     public RevisionId RevisionId { get; init; }
 
     public Instant Created { get; init; }
+
+    public JsonElement State { get; private set; }
 
     public static Instance Create(
         DeploymentId deploymentId,
@@ -43,7 +48,8 @@ public sealed class Instance : AggregateRoot<InstanceId>
             deploymentId,
             processId,
             revisionId,
-            now);
+            now,
+            Helpers.EmptyJsonElement());
 
         return instance;
     }
