@@ -1,8 +1,8 @@
 ﻿namespace Conductor.Application.Settings;
 
-public sealed class CommonSettings
+public sealed class ApplicationSettings
 {
-    public const string SectionName = "Common";
+    public const string SectionName = "Application";
 
     /// <summary>
     /// Unique number for all instances of all entities.

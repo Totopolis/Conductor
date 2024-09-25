@@ -38,6 +38,8 @@ Reference .NET project in the process orchestration domain area.
 
 - DDD thoughts: https://www.youtube.com/watch?v=kLLsVT_53bw&list=PL2E-vlKoo_v3ch9oZWYZWwRbqdVoWHY8X
 
+- DDD Aggregate in EF: https://www.youtube.com/watch?v=5_un3PUER8U
+
 - Vladimir Khorikov (TDD, DDD): https://enterprisecraftsmanship.com/posts
 
 - Functional approach: https://github.com/vkhorikov/CSharpFunctionalExtensions

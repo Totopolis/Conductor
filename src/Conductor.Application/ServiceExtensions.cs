@@ -12,8 +12,8 @@ public static class ServiceExtensions
         IConfiguration configuration)
     {
         services.AddSettingsWithValidation<
-            CommonSettings,
-            CommonSettingsValidator>(CommonSettings.SectionName);
+            ApplicationSettings,
+            ApplicationSettingsValidator>(ApplicationSettings.SectionName);
 
         return services;
     }

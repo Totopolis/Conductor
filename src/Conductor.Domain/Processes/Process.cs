@@ -33,8 +33,6 @@ public sealed class Process : AggregateRoot<ProcessId>
     public int Number { get; init; }
 
     public IReadOnlyList<Revision> Revisions => _revisions
-        .Where(x => !x.IsDraft)
-        .ToList()
         .AsReadOnly();
 
     public Revision Draft => _revisions

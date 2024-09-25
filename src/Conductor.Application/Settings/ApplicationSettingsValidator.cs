@@ -2,9 +2,9 @@
 
 namespace Conductor.Application.Settings;
 
-internal sealed class CommonSettingsValidator : AbstractValidator<CommonSettings>
+internal sealed class ApplicationSettingsValidator : AbstractValidator<ApplicationSettings>
 {
-    public CommonSettingsValidator()
+    public ApplicationSettingsValidator()
     {
         RuleFor(x => x.RefreshSecondsWhileDeploy)
             .GreaterThan(0);
