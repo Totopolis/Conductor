@@ -23,10 +23,7 @@ public sealed class DeploymentTarget : Entity<DeploymentTargetId>
         BufferSize = bufferSize;
     }
 
-    /// <summary>
-    /// Internal cause DeploymentTarget is part of the Deployment aggregate.
-    /// </summary>
-    internal DeploymentId DeploymentId { get; init; }
+    public DeploymentId DeploymentId { get; init; }
 
     public ProcessId ProcessId { get; init; }
 

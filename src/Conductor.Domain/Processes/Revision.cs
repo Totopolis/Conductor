@@ -23,7 +23,7 @@ public sealed class Revision : Entity<RevisionId>
         Content = content;
     }
 
-    internal ProcessId ProcessId { get; init; }
+    public ProcessId ProcessId { get; init; }
 
     public Instant Created { get; private set; }
 

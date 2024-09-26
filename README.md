@@ -10,7 +10,7 @@ Reference .NET project in the process orchestration domain area.
 
 3. Event based app: MassTransit
 
-4. Tests: domain, app, infrastructure (TestContainers), archi
+4. Tests: domain, app, infrastructure (TestContainers, NEED DOCKER DESKTOP!), archi
 
 5. Configuration, consul, options, options validators, observabled options
 
@@ -47,3 +47,5 @@ Reference .NET project in the process orchestration domain area.
 - HTTP API: https://fast-endpoints.com/
 
 - OTEL (RUS): https://www.youtube.com/watch?v=X3faF3xw3m8
+
+- Test containers: https://dotnet.testcontainers.org/

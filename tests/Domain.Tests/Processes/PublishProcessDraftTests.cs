@@ -10,7 +10,7 @@ public class PublishProcessDraftTests
     [Fact]
     public void SingleDraft()
     {
-        Assert.Empty(_process.Revisions);
+        Assert.Single(_process.Revisions, x=>x.IsDraft);
         Assert.True(_process.Draft.IsDraft);
     }
 
@@ -18,13 +18,13 @@ public class PublishProcessDraftTests
     public void PublishDraft()
     {
         var now = TimeProvider.System.GetInstantNow();
-        
+
         // Act
         _process.PublishDraft(now);
 
         // Assert
-        Assert.Single(_process.Revisions);
-        
+        Assert.Single(_process.Revisions, x => !x.IsDraft);
+
         Assert.Equal(1, _process.Revisions.First().Number);
         Assert.False(_process.Revisions.First().IsDraft);
 

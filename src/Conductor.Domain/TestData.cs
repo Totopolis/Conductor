@@ -27,8 +27,6 @@ public static class TestData
         var (process, revision) = CreateProcessWithOneRevision();
 
         var deployment = Deployment.CreateDraft(
-            process.Id,
-            revision.Id,
             now: TimeProvider.System.GetInstantNow(),
             deploymentNumber: 1,
             notes: string.Empty);

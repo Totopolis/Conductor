@@ -1,6 +1,5 @@
 ﻿using Conductor.Domain.Events;
 using Conductor.Domain.Primitives;
-using Conductor.Domain.Processes;
 using Conductor.Domain.ValueObjects;
 using NodaTime;
 
@@ -12,24 +11,16 @@ public sealed class Deployment : AggregateRoot<DeploymentId>
 
     private Deployment(
         DeploymentId id,
-        ProcessId processId,
-        RevisionId revisionId,
         Instant created,
         int number,
         DeploymentState state,
         string notes) : base(id)
     {
-        ProcessId = processId;
-        RevisionId = revisionId;
         Created = created;
         Number = number;
         State = state;
         Notes = notes;
     }
-
-    public ProcessId ProcessId { get; init; }
-
-    public RevisionId RevisionId { get; init; }
 
     public Instant Created { get; init; }
 
@@ -42,15 +33,10 @@ public sealed class Deployment : AggregateRoot<DeploymentId>
     public IReadOnlyList<DeploymentTarget> Targets => _targets.AsReadOnly();
 
     public static Deployment CreateDraft(
-        ProcessId processId,
-        RevisionId revisionId,
         Instant now,
         int deploymentNumber,
         string notes)
     {
-        ArgumentOutOfRangeException.ThrowIfEqual(processId.Id, Guid.Empty);
-        ArgumentOutOfRangeException.ThrowIfEqual(revisionId.Id, Guid.Empty);
-
         ArgumentOutOfRangeException.ThrowIfEqual(now, Instant.MinValue);
         ArgumentOutOfRangeException.ThrowIfEqual(now, Instant.MaxValue);
 
@@ -60,8 +46,6 @@ public sealed class Deployment : AggregateRoot<DeploymentId>
         var id = new DeploymentId(Guid.NewGuid());
         return new Deployment(
             id,
-            processId,
-            revisionId,
             created: now,
             deploymentNumber,
             state: DeploymentState.Draft,

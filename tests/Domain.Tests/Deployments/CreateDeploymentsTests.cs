@@ -20,16 +20,12 @@ public class CreateDeploymentsTests
     {
         // Act
         var deployment = Deployment.CreateDraft(
-            _process.Id,
-            _revision.Id,
             TimeProvider.System.GetInstantNow(),
             deploymentNumber: 1,
             notes: string.Empty);
 
         // Assert
         Assert.NotEqual(Guid.Empty, deployment.Id.Id);
-        Assert.Equal(_process.Id, deployment.ProcessId);
-        Assert.Equal(_revision.Id, deployment.RevisionId);
         Assert.Equal(1, deployment.Number);
         Assert.Equal(DeploymentState.Draft, deployment.State);
         Assert.Empty(deployment.Targets);
@@ -40,8 +36,6 @@ public class CreateDeploymentsTests
         [CombinatorialValues(int.MinValue, -1, 0, int.MaxValue)] int number)
     {
         var createDeployment = () => Deployment.CreateDraft(
-            _process.Id,
-            _revision.Id,
             TimeProvider.System.GetInstantNow(),
             deploymentNumber: number,
             notes: string.Empty);
