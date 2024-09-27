@@ -4,6 +4,6 @@ public record struct DeploymentTargetId(Guid Id) : IComparable<DeploymentTargetI
 {
     public int CompareTo(DeploymentTargetId other)
     {
-        return Id == other.Id ? 1 : 0;
+        return Id == other.Id ? 0 : 1;
     }
 }

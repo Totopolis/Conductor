@@ -4,6 +4,6 @@ public record struct InstanceId(Guid Id) : IComparable<InstanceId>
 {
     public int CompareTo(InstanceId other)
     {
-        return Id == other.Id ? 1 : 0;
+        return Id == other.Id ? 0 : 1;
     }
 }

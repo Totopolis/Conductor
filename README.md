@@ -49,3 +49,7 @@ Reference .NET project in the process orchestration domain area.
 - OTEL (RUS): https://www.youtube.com/watch?v=X3faF3xw3m8
 
 - Test containers: https://dotnet.testcontainers.org/
+
+## Need to consider
+
+- https://andrewlock.net/preventing-breaking-changes-in-public-apis-with-publicapigenerator/
