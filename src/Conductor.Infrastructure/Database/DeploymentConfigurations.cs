@@ -64,16 +64,16 @@ internal sealed class DeploymentConfigurations : IEntityTypeConfiguration<Deploy
                 .HasConversion(id => id.Id, val => new DeploymentId(val))
                 .IsRequired();
 
-                sb.WithOwner()
-                 .HasForeignKey(x => x.ProcessId);
+                /*sb.WithOwner()
+                 .HasForeignKey(x => x.ProcessId);*/
 
                 sb.Property(x => x.ProcessId)
                 .HasColumnName("process_id")
                 .HasConversion(id => id.Id, val => new ProcessId(val))
                 .IsRequired();
 
-                sb.WithOwner()
-                .HasForeignKey(x => x.RevisionId);
+                /*sb.WithOwner()
+                .HasForeignKey(x => x.RevisionId);*/
 
                 sb.Property(x => x.RevisionId)
                 .HasColumnName("revision_id")

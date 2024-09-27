@@ -13,19 +13,19 @@ public sealed class ProcessRepository : IProcessRepository
         _db = db;
     }
 
-    public async Task<Process> GetByIdWithAllRevisions(
+    public async Task<Process?> GetByIdWithAllRevisions(
         ProcessId processId,
         CancellationToken ct)
     {
         var finded = await _db.Set<Process>()
             .Include(x => x.Revisions)
             .Where(x => x.Id == processId)
-            .FirstAsync(ct);
+            .FirstOrDefaultAsync(ct);
 
         return finded;
     }
 
-    public async Task<Process> GetWithOneRevision(
+    public async Task<Process?> GetWithOneRevision(
         ProcessId processId,
         RevisionId revisionId,
         CancellationToken ct)
@@ -34,8 +34,13 @@ public sealed class ProcessRepository : IProcessRepository
             .Include(x => x.Revisions)
             // TODO: filter revisionId
             .Where(x => x.Id == processId)
-            .FirstAsync(ct);
+            .FirstOrDefaultAsync(ct);
 
         return finded;
+    }
+
+    public void Add(Process process)
+    {
+        _db.Set<Process>().Add(process);
     }
 }

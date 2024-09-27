@@ -32,12 +32,9 @@ public static class Helpers
         return result;
     }
 
-    public static JsonElement EmptyJsonElement()
-    {
-        var json = "{}";
-        using var doc = JsonDocument.Parse(json);
-        var emptyObject = doc.RootElement;
+    public static readonly JsonDocument EmptyJsonDocument =
+        JsonDocument.Parse("{}");
 
-        return emptyObject;
-    }
+    public static readonly JsonElement EmptyJsonElement =
+        EmptyJsonDocument.RootElement;
 }

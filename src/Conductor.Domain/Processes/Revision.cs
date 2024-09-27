@@ -58,7 +58,7 @@ public sealed class Revision : Entity<RevisionId>
             number: revisionNumber,
             isDraft: true,
             releaseNotes,
-            content: Helpers.EmptyJsonElement());
+            content: Helpers.EmptyJsonElement);
     }
 
     public void ChangeReleaseNotes(string releaseNotes)

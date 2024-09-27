@@ -50,7 +50,7 @@ public sealed class Instance : AggregateRoot<InstanceId>
             processId,
             revisionId,
             now,
-            Helpers.EmptyJsonElement());
+            Helpers.EmptyJsonElement);
 
         return instance;
     }

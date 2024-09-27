@@ -1,9 +1,11 @@
 using Conductor.Infrastructure;
 using Conductor.Infrastructure.Database;
 using Conductor.Infrastructure.Settings;
+using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using NSubstitute;
 using Testcontainers.PostgreSql;
 
 namespace Infrastructure.Tests;
@@ -50,7 +52,9 @@ public abstract class AbstractRepositoryTests : IAsyncLifetime
 
         builder.Services
             .AddInfrastructureServices(builder.Configuration);
-            // .AddMasstransitLocal(builder.Configuration);
+        // .AddMasstransitLocal(builder.Configuration);
+
+        builder.Services.AddSingleton(Substitute.For<IPublishEndpoint>());
 
         var app = builder.Build();
 
