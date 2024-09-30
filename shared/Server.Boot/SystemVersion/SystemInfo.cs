@@ -1,4 +1,5 @@
-﻿using Server.Abstractions;
+﻿using Microsoft.Extensions.Hosting;
+using Server.Abstractions;
 
 namespace Server.Boot.SystemVersion;
 

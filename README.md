@@ -10,9 +10,9 @@ Reference .NET project in the process orchestration domain area.
 
 3. Event based app: MassTransit
 
-4. Tests: domain, app, infrastructure (TestContainers, NEED DOCKER DESKTOP!), archi
+4. Tests (AAA): domain, app, infrastructure (TestContainers, NEED DOCKER DESKTOP!), archi
 
-5. Configuration, consul, options, options validators, observabled options
+5. Configuration, consul, options, options validators, observabled options, each layer has itself options
 
 6. Open telemetry: logs, traces and metrics
 
@@ -28,7 +28,9 @@ Reference .NET project in the process orchestration domain area.
 
 12. A little bit of "AI"
 
-13. Docker & CI
+13. Docker & CI & Versioning
+
+14. Healchecks and readness (k8s environment)
 
 ## References
 
@@ -53,3 +55,5 @@ Reference .NET project in the process orchestration domain area.
 ## Need to consider
 
 - https://andrewlock.net/preventing-breaking-changes-in-public-apis-with-publicapigenerator/
+
+- https://www.youtube.com/watch?v=IsmyqNrfQQw

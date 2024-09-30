@@ -31,6 +31,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Conductor.Infrastructure", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Conductor.Server", "src\Conductor.Server\Conductor.Server.csproj", "{3EC7038F-A10E-46B0-BD2D-C497505D480E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Conductor.Api", "src\Conductor.Api\Conductor.Api.csproj", "{C3A48792-EF5A-4447-8DF8-E9A7CC456FAB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +87,10 @@ Global
 		{3EC7038F-A10E-46B0-BD2D-C497505D480E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EC7038F-A10E-46B0-BD2D-C497505D480E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3EC7038F-A10E-46B0-BD2D-C497505D480E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3A48792-EF5A-4447-8DF8-E9A7CC456FAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3A48792-EF5A-4447-8DF8-E9A7CC456FAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3A48792-EF5A-4447-8DF8-E9A7CC456FAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3A48792-EF5A-4447-8DF8-E9A7CC456FAB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

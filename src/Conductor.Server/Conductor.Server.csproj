@@ -21,6 +21,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\shared\LangModel.OpenAi\LangModel.OpenAi.csproj" />
 		<ProjectReference Include="..\..\shared\Server.Boot\Server.Boot.csproj" />
+		<ProjectReference Include="..\Conductor.Api\Conductor.Api.csproj" />
 		<ProjectReference Include="..\Conductor.Infrastructure\Conductor.Infrastructure.csproj" />
 	</ItemGroup>
 

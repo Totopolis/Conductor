@@ -1,4 +1,6 @@
 ﻿using Server.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 
 namespace Server.Boot.MaintenanceBot;
 
@@ -24,8 +26,8 @@ internal sealed class MaintenanceBotHostedService : BackgroundService
         {
             if (!_systemInfo.IsDevelopment)
             {
-                await _botSender.BroadcastMessage(@$"Starship APPNAME flyout.
-Version: {ThisAssembly.Info.InformationalVersion}");
+                await _botSender.BroadcastMessage(@$"Starship APPNAME flyout.");
+// Version: {ThisAssembly.Info.InformationalVersion}");
             }
         }
         catch (Exception ex)

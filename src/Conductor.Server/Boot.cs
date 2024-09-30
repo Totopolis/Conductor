@@ -1,9 +1,9 @@
-﻿using Conductor.Application;
+﻿using Conductor.Api;
+using Conductor.Application;
 using Conductor.Infrastructure;
 using FastEndpoints;
 using Microsoft.AspNetCore.Http.Json;
 using Server.Boot;
-using LangModel.OpenAi;
 
 namespace Conductor.Server;
 
@@ -32,10 +32,13 @@ public static class Boot
         builder.Services.AddSystemVersion();
         // builder.Services.AddMaintenanceBot(builder.Configuration);
 
+        builder.Services.AddMasstransitLocal(builder.Configuration);
+
         builder.Services
             // .AddLangModelOpenAiServices(builder.Configuration)
             .AddApplicationServices(builder.Configuration)
-            .AddInfrastructureServices(builder.Configuration);
+            .AddInfrastructureServices(builder.Configuration)
+            .AddApiServices(builder.Configuration);
     }
 
     public static async Task PostBuild(this WebApplication app)

@@ -1,7 +1,8 @@
 ﻿using FastEndpoints;
+using Microsoft.Extensions.Logging;
 using Server.Abstractions;
 
-namespace Server.Boot;
+namespace Conductor.Api;
 
 // https://fast-endpoints.com/docs/get-started#union-type-returning-handler
 public class RootEndpoint : EndpointWithoutRequest<RootResponse>
