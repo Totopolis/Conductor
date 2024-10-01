@@ -15,6 +15,8 @@ public static class ServiceExtensions
             ApplicationSettings,
             ApplicationSettingsValidator>(ApplicationSettings.SectionName);
 
+        services.AddMediatR(x => x.RegisterServicesFromAssembly(typeof(ServiceExtensions).Assembly));
+
         return services;
     }
 }

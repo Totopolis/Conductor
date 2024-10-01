@@ -14,12 +14,6 @@ public static class Boot
         // ATTENTION: Must be first in order.
         // builder.Configuration.MergeServerSettingsFromConsul(builder.Configuration);
 
-        builder.Services
-            .AddFastEndpoints(opt =>
-            {
-                opt.Assemblies = [typeof(RootEndpoint).Assembly];
-            });
-
         // https://fast-endpoints.com/docs/configuration-settings#specify-json-serializer-options
         builder.Services.Configure<JsonOptions>(o => o.SerializerOptions.WriteIndented = true);
 

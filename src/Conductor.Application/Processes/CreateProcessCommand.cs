@@ -1,4 +1,5 @@
 ﻿using Conductor.Domain.Processes;
+using CSharpFunctionalExtensions;
 using MediatR;
 
 namespace Conductor.Application.Processes;
@@ -7,4 +8,4 @@ namespace Conductor.Application.Processes;
 public record CreateProcessCommand(
     string Name,
     string DisplayName,
-    string Description) : IRequest<Process>;
+    string Description) : IRequest<Result<Process>>;

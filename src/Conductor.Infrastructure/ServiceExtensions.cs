@@ -1,6 +1,7 @@
 ﻿using Conductor.Domain.Abstractions;
 using Conductor.Infrastructure.Database;
 using Conductor.Infrastructure.EventBus;
+using Conductor.Infrastructure.Numbers;
 using Conductor.Infrastructure.Settings;
 using MassTransit;
 using MassTransit.Metadata;
@@ -31,6 +32,8 @@ public static class ServiceExtensions
             .AddTransient<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<IEventBus, EventBus.EventBus>();
+
+        services.AddScoped<INumberService, NumberService>();
 
         return services;
     }

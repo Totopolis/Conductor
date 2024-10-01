@@ -1,7 +1,7 @@
 ﻿using Conductor.Application.Processes;
 using FastEndpoints;
+using FluentValidation;
 using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Conductor.Api.Processes.Create;
 
@@ -12,11 +12,18 @@ internal class CreateProcessEndpoint : Endpoint<
     CreateProcessRequest,
     CreateProcessResponse>
 {
+    private readonly IValidator<CreateProcessRequest> _validator;
     private readonly IMediator _mediator;
+    private readonly AutoMapper.IMapper _mapper;
 
-    public CreateProcessEndpoint(IMediator mediator)
+    public CreateProcessEndpoint(
+        IValidator<CreateProcessRequest> validator,
+        IMediator mediator,
+        AutoMapper.IMapper mapper)
     {
+        _validator = validator;
         _mediator = mediator;
+        _mapper = mapper;
     }
 
     public override void Configure()
@@ -36,26 +43,35 @@ internal class CreateProcessEndpoint : Endpoint<
         });
     }
 
-    // TODO: fluent validate request (just ) AND domain errors by exceptions
     // TODO: use complex-monade result
     public override async Task<CreateProcessResponse> ExecuteAsync(
-        CreateProcessRequest req, CancellationToken ct)
+        CreateProcessRequest req,
+        CancellationToken ct)
     {
-        // TODO: use auto mapping
-        // TODO: provide auth props (will be checked at app layer)
-        var command = new CreateProcessCommand(
-            req.Name,
-            req.DisplayName,
-            req.Description);
+        // Validate is about just structure and types checks.
+        var validationResult = _validator.Validate(req);
 
-        var process = await _mediator.Send(command);
-        var response = new CreateProcessResponse(
-            process.Id.Id,
-            process.Name,
-            process.DisplayName,
-            process.Description,
-            process.Number);
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                AddError(error);
+            }
 
+            ThrowIfAnyErrors();
+        }
+
+        // TODO: provide auth and claims to command,
+        // will be additionally checked at the app layer.
+        var command = _mapper.Map<CreateProcessCommand>(req);
+
+        var processResult = await _mediator.Send(command);
+        if (!processResult.IsSuccess)
+        {
+            ThrowError(processResult.Error);
+        }
+
+        var response = _mapper.Map<CreateProcessResponse>(processResult.Value);
         return response;
     }
 }
