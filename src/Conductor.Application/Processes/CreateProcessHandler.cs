@@ -1,13 +1,16 @@
-﻿using Conductor.Application.Processes;
+﻿using Conductor.Application.Diagnostics;
+using Conductor.Application.Processes;
 using Conductor.Domain;
 using Conductor.Domain.Abstractions;
 using Conductor.Domain.Processes;
-using CSharpFunctionalExtensions;
+using ErrorOr;
 using MediatR;
 
 namespace Conductor.Application.ApiHandlers;
 
-internal class CreateProcessHandler : IRequestHandler<CreateProcessCommand, Result<Process>>
+internal class CreateProcessHandler : IRequestHandler<
+    CreateProcessCommand,
+    ErrorOr<Process>>
 {
     private readonly INumberService _numberService;
 
@@ -16,7 +19,7 @@ internal class CreateProcessHandler : IRequestHandler<CreateProcessCommand, Resu
         _numberService = numberService;
     }
 
-    public async Task<Result<Process>> Handle(
+    public async Task<ErrorOr<Process>> Handle(
         CreateProcessCommand request,
         CancellationToken cancellationToken)
     {
@@ -25,8 +28,7 @@ internal class CreateProcessHandler : IRequestHandler<CreateProcessCommand, Resu
             var processNumber = await _numberService.GenerateNext(
                 INumberService.GeneratorType.Process);
 
-            // TODO: use result pattern in the factory method instead exceptions
-            var process = Process.Create(
+            var result = Process.Create(
                 request.Name,
                 request.DisplayName,
                 request.Description,
@@ -35,11 +37,18 @@ internal class CreateProcessHandler : IRequestHandler<CreateProcessCommand, Resu
                 now: TimeProvider.System.GetInstantNow(),
                 processNumber);
 
-            return process;
+            if (result.IsError)
+            {
+                return result;
+            }
+
+            // TODO: repo and uow
+            return result.Value;
         }
-        catch (Exception ex)
+        catch
         {
-            return Result.Failure<Process>(ex.Message);
+            // TODO: use Errors.Application.CreateProcessHandler
+            return ApplicationErrors.CommandHandlerUnhandledException;
         }
     }
 }

@@ -1,5 +1,7 @@
 using Conductor.Domain;
+using Conductor.Domain.Diagnostics;
 using Conductor.Domain.Processes;
+using ErrorOr;
 using NodaTime;
 
 namespace Domain.Tests.Processes;
@@ -20,7 +22,7 @@ public class CreateProcessTests
             displayName: ProcessDisplayName,
             description: ProcessDescription,
             now: _now,
-            processNumber: 1);
+            processNumber: 1).Value;
 
         Assert.Equal(ProcessName, process.Name);
         Assert.Equal(ProcessDisplayName, process.DisplayName);
@@ -39,47 +41,54 @@ public class CreateProcessTests
         "3name",
         "_name")] string name)
     {
-        var createProcess = () => Process.Create(
+        var result = Process.Create(
             name: name,
             displayName: ProcessDisplayName,
             description: ProcessDescription,
             now: _now,
             processNumber: 1);
 
-        var ex = Assert.Throws<ArgumentException>(() => createProcess());
+        List<Error> expectedErrors = [
+            DomainErrors.Process.NameCanNotBeNullOrWhitespace,
+            DomainErrors.Process.NameFirstCharMustBeLetter,
+            DomainErrors.Process.NameLengthMustBeGreater2,
+            DomainErrors.Process.NameAllCharsMustBeLetterOrDigitOrUnderscore];
 
-        Assert.Contains("name", ex.Message);
+        Assert.True(result.IsError);
+        Assert.Contains(expectedErrors, x => x == result);
     }
 
     [Theory, CombinatorialData]
     public void FailCreateByDisplayName(
         [CombinatorialValues("", "dn", null)] string displayName)
     {
-        var createProcess = () => Process.Create(
+        var result = Process.Create(
             name: ProcessName,
             displayName: displayName,
             description: ProcessDescription,
             now: _now,
             processNumber: 1);
 
-        var ex = Assert.Throws<ArgumentException>(() => createProcess());
+        List<Error> expectedErrors = [
+            DomainErrors.Process.DisplaynameCanNotBeNullOrWhitespace,
+            DomainErrors.Process.DisplaynameLengthMustBeGreater2];
 
-        Assert.Contains("displayName", ex.Message);
+        Assert.True(result.IsError);
+        Assert.Contains(expectedErrors, x => x == result);
     }
 
     [Theory, CombinatorialData]
     public void FailCreateByNumber(
         [CombinatorialValues(int.MinValue, -1, 0, int.MaxValue)] int number)
     {
-        var createProcess = () => Process.Create(
+        var result = Process.Create(
             name: ProcessName,
             displayName: ProcessDisplayName,
             description: ProcessDescription,
             now: _now,
             processNumber: number);
 
-        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => createProcess());
-
-        Assert.Contains("processNumber", ex.Message);
+        Assert.True(result.IsError);
+        Assert.Equal(DomainErrors.Process.ProcessNumberValueIsOutOfRange, result);
     }
 }

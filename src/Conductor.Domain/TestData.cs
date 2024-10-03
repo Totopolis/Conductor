@@ -11,7 +11,7 @@ public static class TestData
         displayName: "Hire stuff",
         description: "One of the most hr process",
         now: TimeProvider.System.GetInstantNow(),
-        processNumber: 1);
+        processNumber: 1).Value;
 
     public static Func<(Process, Revision)> CreateProcessWithOneRevision = () =>
     {

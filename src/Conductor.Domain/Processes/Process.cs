@@ -1,4 +1,6 @@
-﻿using Conductor.Domain.Primitives;
+﻿using Conductor.Domain.Diagnostics;
+using Conductor.Domain.Primitives;
+using ErrorOr;
 using NodaTime;
 
 namespace Conductor.Domain.Processes;
@@ -39,7 +41,7 @@ public sealed class Process : AggregateRoot<ProcessId>
         .Where(x => x.IsDraft)
         .First();
 
-    public static Process Create(
+    public static ErrorOr<Process> Create(
         string name,
         string displayName,
         string description,
@@ -47,30 +49,58 @@ public sealed class Process : AggregateRoot<ProcessId>
         int processNumber,
         int? revisionNumber = null)
     {
-        if (string.IsNullOrWhiteSpace(name) ||
-            name.Length < 3 ||
-            !char.IsLetter(name.First()) ||
-            !name.All(x => char.IsLetter(x) || char.IsDigit(x) || x == '_'))
+        List<Error> errors = [];
+
+        // TODO: Use ErrorOr lib combine error
+        if (string.IsNullOrWhiteSpace(name))
         {
-            throw new ArgumentException(nameof(name));
+            errors.Add(DomainErrors.Process.NameCanNotBeNullOrWhitespace);
         }
 
-        if (string.IsNullOrWhiteSpace(displayName) ||
-            displayName.Length < 3)
+        if (name.Length < 3)
         {
-            throw new ArgumentException(nameof(displayName));
+            errors.Add(DomainErrors.Process.NameLengthMustBeGreater2);
         }
 
-        ArgumentOutOfRangeException.ThrowIfEqual(now, Instant.MinValue);
-        ArgumentOutOfRangeException.ThrowIfEqual(now, Instant.MaxValue);
+        if (!char.IsLetter(name.First()))
+        {
+            errors.Add(DomainErrors.Process.NameFirstCharMustBeLetter);
+        }
 
-        ArgumentOutOfRangeException.ThrowIfEqual(processNumber, int.MaxValue);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processNumber);
+        if (!name.All(x => char.IsLetter(x) || char.IsDigit(x) || x == '_'))
+        {
+            errors.Add(DomainErrors.Process.NameAllCharsMustBeLetterOrDigitOrUnderscore);
+        }
+
+        if (string.IsNullOrWhiteSpace(displayName))
+        {
+            errors.Add(DomainErrors.Process.DisplaynameCanNotBeNullOrWhitespace);
+        }
+
+        if (displayName.Length < 3)
+        {
+            errors.Add(DomainErrors.Process.DisplaynameLengthMustBeGreater2);
+        }
+
+        if (now == Instant.MinValue || now == Instant.MaxValue)
+        {
+            errors.Add(DomainErrors.Process.NowValueIsOutOfRange);
+        }
+
+        if (processNumber == int.MaxValue || processNumber <= 0)
+        {
+            errors.Add(DomainErrors.Process.ProcessNumberValueIsOutOfRange);
+        }
 
         if (revisionNumber.HasValue)
         {
             ArgumentOutOfRangeException.ThrowIfEqual(revisionNumber.Value, int.MaxValue);
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(revisionNumber.Value);
+        }
+
+        if (errors.Count > 0)
+        {
+            return errors.ToErrorOr<Process>();
         }
 
         var id = new ProcessId(Guid.NewGuid());

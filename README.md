@@ -22,7 +22,7 @@ Reference .NET project in the process orchestration domain area.
 
 9. Syntax analyzers: cutted codestyle, banned list
 
-10. EF Core with DDD: repository, unit of work
+10. EF Core with DDD: repository, unit of work, migrations
 
 11. Domain events: transactional outbox pattern
 
@@ -31,6 +31,12 @@ Reference .NET project in the process orchestration domain area.
 13. Docker & CI & Versioning
 
 14. Healchecks and readness (k8s environment)
+
+15. Result pattern: factory and other methods, combine errors, type-code-description, metadata
+
+16. Api: request validate and errors handling
+
+17. CQRS: commands and queries through MediatR
 
 ## References
 
@@ -45,6 +51,8 @@ Reference .NET project in the process orchestration domain area.
 - Vladimir Khorikov (TDD, DDD): https://enterprisecraftsmanship.com/posts
 
 - Functional approach: https://github.com/vkhorikov/CSharpFunctionalExtensions
+
+- ErrorOr (result pattern): https://github.com/amantinband/error-or
 
 - HTTP API: https://fast-endpoints.com/
 

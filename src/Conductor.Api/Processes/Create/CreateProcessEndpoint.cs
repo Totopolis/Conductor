@@ -1,4 +1,5 @@
 ﻿using Conductor.Application.Processes;
+using ErrorOr;
 using FastEndpoints;
 using FluentValidation;
 using MediatR;
@@ -43,7 +44,7 @@ internal class CreateProcessEndpoint : Endpoint<
         });
     }
 
-    // TODO: use complex-monade result
+    // TODO: extract generic code
     public override async Task<CreateProcessResponse> ExecuteAsync(
         CreateProcessRequest req,
         CancellationToken ct)
@@ -65,13 +66,16 @@ internal class CreateProcessEndpoint : Endpoint<
         // will be additionally checked at the app layer.
         var command = _mapper.Map<CreateProcessCommand>(req);
 
-        var processResult = await _mediator.Send(command);
-        if (!processResult.IsSuccess)
+        var commandResult = await _mediator.Send(command);
+        if (commandResult.IsError)
         {
-            ThrowError(processResult.Error);
+            commandResult.ErrorsOrEmptyList
+                .ForEach(x => AddError(x.Description, x.Code));
+
+            ThrowIfAnyErrors();
         }
 
-        var response = _mapper.Map<CreateProcessResponse>(processResult.Value);
+        var response = _mapper.Map<CreateProcessResponse>(commandResult.Value);
         return response;
     }
 }
