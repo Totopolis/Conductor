@@ -4,6 +4,7 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>5c3f053e-d49d-4a46-97ae-d29ec70ec510</UserSecretsId>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -14,7 +15,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.8.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.8.1" />
 		<PackageReference Include="Winton.Extensions.Configuration.Consul" Version="3.4.0" />
 	</ItemGroup>
 

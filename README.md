@@ -38,6 +38,8 @@ Reference .NET project in the process orchestration domain area.
 
 17. CQRS: commands and queries through MediatR
 
+18. Secret manager (setup Consul section like in appsettings.development.json): https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets
+
 ## References
 
 - .NET BIBLE https://www.youtube.com/@nickchapsas
@@ -58,7 +60,7 @@ Reference .NET project in the process orchestration domain area.
 
 - OTEL (RUS): https://www.youtube.com/watch?v=X3faF3xw3m8
 
-- Test containers: https://dotnet.testcontainers.org/
+- Test containers: https://dotnet.testcontainers.org/ https://blog.jetbrains.com/dotnet/2023/10/24/how-to-use-testcontainers-with-dotnet-unit-tests/
 
 ## Need to consider
 

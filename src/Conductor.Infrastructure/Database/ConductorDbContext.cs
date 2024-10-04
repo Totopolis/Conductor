@@ -5,12 +5,24 @@ using Microsoft.Extensions.Options;
 
 namespace Conductor.Infrastructure.Database;
 
+// Generate migration sql script
+// 0. Run VS Package Manager Console
+// 1. dotnet tool install --global dotnet-ef
+// 2. cd /src/Conductor.Infrastructure
+// 3. dotnet ef migrations add InitialCreate
+// 4. dotnet ef migrations script -o ./Migrations/InitialCreate.sql
 public class ConductorDbContext : DbContext
 {
     public const string TimestampType = "timestamp with time zone";
 
     private readonly string _connectionString;
     private readonly ILoggerFactory _loggerFactory;
+
+    public ConductorDbContext()
+    {
+        _connectionString = default!;
+        _loggerFactory = default!;
+    }
 
     public ConductorDbContext(
         IOptions<InfrastructureSettings> options,
@@ -20,28 +32,17 @@ public class ConductorDbContext : DbContext
         _loggerFactory = loggerFactory;
     }
 
-    // ATTENTION: Only dev env use
-    public async Task EnsureDatabaseStructureCreated(CancellationToken ct = default)
-    {
-        var sql = @"
--- Recreate the schema
-DROP SCHEMA public CASCADE;
-CREATE SCHEMA public;
-
--- Restore default permissions
--- GRANT ALL ON SCHEMA public TO postgres;
-GRANT ALL ON SCHEMA public TO public;";
-
-        await Database.ExecuteSqlRawAsync(sql, ct);
-        await Database.EnsureCreatedAsync(ct);
-    }
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder
-            .UseNpgsql(_connectionString, o => o.UseNodaTime())
-            .UseLoggerFactory(_loggerFactory);
-        // .EnableSensitiveDataLogging();
+        optionsBuilder.UseNpgsql(
+            connectionString: _connectionString,
+            npgsqlOptionsAction: o => o.UseNodaTime());
+
+        optionsBuilder.UseLoggerFactory(_loggerFactory);
+
+        // builder.EnableSensitiveDataLogging();
+
+        base.OnConfiguring(optionsBuilder);
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)

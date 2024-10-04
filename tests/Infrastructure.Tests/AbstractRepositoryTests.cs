@@ -41,7 +41,6 @@ public abstract class AbstractRepositoryTests : IAsyncLifetime
     {
         var builder = Host.CreateEmptyApplicationBuilder(null);
 
-        // TODO: checkup!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
         var pgConnectionString = _dbContainer.GetConnectionString();
         var infrastructureSettings = Options.Create(new InfrastructureSettings
         {
@@ -61,7 +60,7 @@ public abstract class AbstractRepositoryTests : IAsyncLifetime
         using (var scope = app.Services.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<ConductorDbContext>();
-            await dbContext.EnsureDatabaseStructureCreated(_timeoutTokenSource.Token);
+            await dbContext.Database.EnsureCreatedAsync(_timeoutTokenSource.Token);
         }
 
         // TODO: apply awaiter?

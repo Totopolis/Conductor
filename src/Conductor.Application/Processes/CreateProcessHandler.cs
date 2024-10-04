@@ -13,10 +13,17 @@ internal class CreateProcessHandler : IRequestHandler<
     ErrorOr<Process>>
 {
     private readonly INumberService _numberService;
+    private readonly IProcessRepository _repository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public CreateProcessHandler(INumberService numberService)
+    public CreateProcessHandler(
+        INumberService numberService,
+        IProcessRepository repository,
+        IUnitOfWork unitOfWork)
     {
         _numberService = numberService;
+        _repository = repository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ErrorOr<Process>> Handle(
@@ -42,12 +49,13 @@ internal class CreateProcessHandler : IRequestHandler<
                 return result;
             }
 
-            // TODO: repo and uow
+            _repository.Add(result.Value);
+            await _unitOfWork.SaveChanges(cancellationToken);
+
             return result.Value;
         }
         catch
         {
-            // TODO: use Errors.Application.CreateProcessHandler
             return ApplicationErrors.CommandHandlerUnhandledException;
         }
     }
