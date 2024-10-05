@@ -33,13 +33,18 @@ public static partial class ServiceExtensions
         return services;
     }
 
-    public static void MergeServerSettingsFromConsul(
+    public static void MergeServerSettingsFromConsulIfNeed(
         this IConfigurationManager configurationManager,
         IConfiguration configuration)
     {
         var settings = configuration.ValidateAndReturnPreBuildSettings<
             ConsulSettings,
             ConsulSettingsValidator>(ConsulSettings.SectionName);
+
+        if (settings.Enable is false)
+        {
+            return;
+        }
 
         configurationManager
             .AddConsul(

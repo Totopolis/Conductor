@@ -4,6 +4,8 @@ public record ConsulSettings
 {
     public const string SectionName = "Consul";
 
+    public required bool Enable { get; init; }
+
     public required string Url { get; init; }
 
     public required string Token { get; init; }
