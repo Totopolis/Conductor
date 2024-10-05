@@ -19,6 +19,7 @@
 
 	<ItemGroup>
 		<Folder Include="Deployments\" />
+		<Folder Include="Processes\List\" />
 		<Folder Include="Processes\Update\" />
 	</ItemGroup>
 

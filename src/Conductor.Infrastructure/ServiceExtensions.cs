@@ -1,7 +1,7 @@
 ﻿using Conductor.Domain.Abstractions;
 using Conductor.Infrastructure.Database;
 using Conductor.Infrastructure.EventBus;
-using Conductor.Infrastructure.Numbers;
+using Conductor.Infrastructure.Misc;
 using Conductor.Infrastructure.Settings;
 using MassTransit;
 using MassTransit.Metadata;

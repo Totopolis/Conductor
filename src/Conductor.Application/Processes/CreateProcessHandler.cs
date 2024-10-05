@@ -1,10 +1,12 @@
 ﻿using Conductor.Application.Diagnostics;
 using Conductor.Application.Processes;
+using Conductor.Application.Settings;
 using Conductor.Domain;
 using Conductor.Domain.Abstractions;
 using Conductor.Domain.Processes;
 using ErrorOr;
 using MediatR;
+using Microsoft.Extensions.Options;
 
 namespace Conductor.Application.ApiHandlers;
 
@@ -15,15 +17,18 @@ internal class CreateProcessHandler : IRequestHandler<
     private readonly INumberService _numberService;
     private readonly IProcessRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly bool _generalNumbering;
 
     public CreateProcessHandler(
         INumberService numberService,
         IProcessRepository repository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IOptions<ApplicationSettings> options)
     {
         _numberService = numberService;
         _repository = repository;
         _unitOfWork = unitOfWork;
+        _generalNumbering = options.Value.GeneralNumbering;
     }
 
     public async Task<ErrorOr<Process>> Handle(
@@ -32,8 +37,11 @@ internal class CreateProcessHandler : IRequestHandler<
     {
         try
         {
-            var processNumber = await _numberService.GenerateNext(
-                INumberService.GeneratorType.Process);
+            var processNumber = _generalNumbering ?
+                await _numberService
+                    .GenerateGeneral<Process, ProcessId>(cancellationToken) :
+                await _numberService
+                    .GenerateSeparated<Process, ProcessId>(cancellationToken);
 
             var result = Process.Create(
                 request.Name,

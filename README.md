@@ -6,7 +6,7 @@ Reference .NET project in the process orchestration domain area.
 
 1. Clean architecture solution structure (onion)
 
-2. Domain driven design (DDD): entity, valueobject, aggregate, domain event
+2. Domain driven design (DDD): Entity, ValueObject, Smart enum, Aggregate, Domain event
 
 3. Event based app: MassTransit
 
@@ -39,6 +39,8 @@ Reference .NET project in the process orchestration domain area.
 17. CQRS: commands and queries through MediatR
 
 18. Secret manager (setup Consul section like in appsettings.development.json): https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets
+
+19. SemVer inside CI
 
 ## References
 

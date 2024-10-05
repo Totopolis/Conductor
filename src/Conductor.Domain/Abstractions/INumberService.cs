@@ -1,18 +1,22 @@
-﻿namespace Conductor.Domain.Abstractions;
+﻿using Conductor.Domain.Primitives;
+
+namespace Conductor.Domain.Abstractions;
 
 public interface INumberService
 {
     /// <summary>
-    /// Generate next number in concrete generator.
+    /// Generate next number.
+    /// All entities has one sequence.
     /// </summary>
-    /// <param name="generatorType">Each generator have itself sequence.</param>
-    /// <returns>Next sequence number.</returns>
-    Task<int> GenerateNext(GeneratorType generatorType);
+    Task<int> GenerateGeneral<T, TID>(CancellationToken ct)
+        where T : AggregateRoot<TID>
+        where TID : struct, IComparable<TID>;
 
-    public enum GeneratorType
-    {
-        Process,
-        Deployment,
-        Global
-    }
+    /// <summary>
+    /// Generate next number.
+    /// Each entity has itself sequence.
+    /// </summary>
+    Task<int> GenerateSeparated<T, TID>(CancellationToken ct)
+        where T : AggregateRoot<TID>
+        where TID: struct, IComparable<TID>;
 }
