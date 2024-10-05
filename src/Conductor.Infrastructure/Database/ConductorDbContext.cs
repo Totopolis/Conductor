@@ -8,7 +8,7 @@ namespace Conductor.Infrastructure.Database;
 // Generate migration sql script
 // 0. Run VS Package Manager Console
 // 1. dotnet tool install --global dotnet-ef
-// 2. cd /src/Conductor.Infrastructure
+// 2. cd ./src/Conductor.Infrastructure
 // 3. dotnet ef migrations add InitialCreate
 // 4. dotnet ef migrations script -o ./Migrations/InitialCreate.sql
 public class ConductorDbContext : DbContext

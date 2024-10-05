@@ -55,6 +55,46 @@ namespace Conductor.Infrastructure.Migrations
                     b.ToTable("deployment", "public");
                 });
 
+            modelBuilder.Entity("Conductor.Domain.Numbers.Number", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("integer")
+                        .HasColumnName("kind");
+
+                    b.Property<int>("Value")
+                        .HasColumnType("integer")
+                        .HasColumnName("value");
+
+                    b.HasKey("Id")
+                        .HasName("number_id");
+
+                    b.ToTable("number", "public");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("105493e5-9d9b-46eb-be31-a3906514bf2e"),
+                            Kind = 1,
+                            Value = 1
+                        },
+                        new
+                        {
+                            Id = new Guid("9d7f4492-3bde-4dc7-805d-31c3ab0448e6"),
+                            Kind = 2,
+                            Value = 1
+                        },
+                        new
+                        {
+                            Id = new Guid("53b9986a-b2c6-4e7e-9ea1-ac02ba315154"),
+                            Kind = 3,
+                            Value = 1
+                        });
+                });
+
             modelBuilder.Entity("Conductor.Domain.Processes.Process", b =>
                 {
                     b.Property<Guid>("Id")

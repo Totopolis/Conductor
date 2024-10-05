@@ -5,6 +5,8 @@ using NodaTime;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Conductor.Infrastructure.Migrations
 {
     /// <inheritdoc />
@@ -30,6 +32,20 @@ namespace Conductor.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("deployment_id", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "number",
+                schema: "public",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    kind = table.Column<int>(type: "integer", nullable: false),
+                    value = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("number_id", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -98,6 +114,17 @@ namespace Conductor.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.InsertData(
+                schema: "public",
+                table: "number",
+                columns: new[] { "id", "kind", "value" },
+                values: new object[,]
+                {
+                    { new Guid("105493e5-9d9b-46eb-be31-a3906514bf2e"), 1, 1 },
+                    { new Guid("53b9986a-b2c6-4e7e-9ea1-ac02ba315154"), 3, 1 },
+                    { new Guid("9d7f4492-3bde-4dc7-805d-31c3ab0448e6"), 2, 1 }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_revision_process_id",
                 schema: "public",
@@ -114,6 +141,10 @@ namespace Conductor.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "number",
+                schema: "public");
+
             migrationBuilder.DropTable(
                 name: "revision",
                 schema: "public");
