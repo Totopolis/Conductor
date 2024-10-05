@@ -29,7 +29,7 @@ internal class NumberService : INumberService
         where T : AggregateRoot<TID>
         where TID : struct, IComparable<TID>
     {
-        var kindName = nameof(T);
+        var kindName = typeof(T).Name;
         var kind = GeneratorKind.FromName(kindName);
 
         return await Generate(kind, ct);

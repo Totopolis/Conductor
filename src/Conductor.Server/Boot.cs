@@ -12,6 +12,7 @@ public static class Boot
     public static void PreBuild(this WebApplicationBuilder builder)
     {
         // ATTENTION: Must be first in order.
+        // TODO: make enabled!!!
         builder.Configuration.MergeServerSettingsFromConsul(builder.Configuration);
 
         // https://fast-endpoints.com/docs/configuration-settings#specify-json-serializer-options
