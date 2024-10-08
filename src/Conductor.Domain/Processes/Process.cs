@@ -46,8 +46,7 @@ public sealed class Process : AggregateRoot<ProcessId>
         string displayName,
         string description,
         Instant now,
-        int processNumber,
-        int? revisionNumber = null)
+        int processNumber)
     {
         List<Error> errors = [];
 
@@ -57,17 +56,17 @@ public sealed class Process : AggregateRoot<ProcessId>
             errors.Add(DomainErrors.Process.NameCanNotBeNullOrWhitespace);
         }
 
-        if (name.Length < 3)
+        if (name is not null && name.Length < 3)
         {
             errors.Add(DomainErrors.Process.NameLengthMustBeGreater2);
         }
 
-        if (!char.IsLetter(name.First()))
+        if (name is not null && !char.IsLetter(name.FirstOrDefault()))
         {
             errors.Add(DomainErrors.Process.NameFirstCharMustBeLetter);
         }
 
-        if (!name.All(x => char.IsLetter(x) || char.IsDigit(x) || x == '_'))
+        if (name is not null && !name.All(x => char.IsLetter(x) || char.IsDigit(x) || x == '_'))
         {
             errors.Add(DomainErrors.Process.NameAllCharsMustBeLetterOrDigitOrUnderscore);
         }
@@ -77,7 +76,7 @@ public sealed class Process : AggregateRoot<ProcessId>
             errors.Add(DomainErrors.Process.DisplaynameCanNotBeNullOrWhitespace);
         }
 
-        if (displayName.Length < 3)
+        if (displayName is not null && displayName.Length < 3)
         {
             errors.Add(DomainErrors.Process.DisplaynameLengthMustBeGreater2);
         }
@@ -92,12 +91,6 @@ public sealed class Process : AggregateRoot<ProcessId>
             errors.Add(DomainErrors.Process.ProcessNumberValueIsOutOfRange);
         }
 
-        if (revisionNumber.HasValue)
-        {
-            ArgumentOutOfRangeException.ThrowIfEqual(revisionNumber.Value, int.MaxValue);
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(revisionNumber.Value);
-        }
-
         if (errors.Count > 0)
         {
             return errors.ToErrorOr<Process>();
@@ -107,8 +100,8 @@ public sealed class Process : AggregateRoot<ProcessId>
         
         var process = new Process(
             id,
-            name,
-            displayName,
+            name!,
+            displayName!,
             description,
             now,
             processNumber);
@@ -116,7 +109,7 @@ public sealed class Process : AggregateRoot<ProcessId>
         var draft = Revision.CreateDraft(
             processId: id,
             now: now,
-            revisionNumber: revisionNumber ?? 1,
+            revisionNumber: 1,
             releaseNotes: string.Empty);
 
         process._revisions.Add(draft);
@@ -141,26 +134,17 @@ public sealed class Process : AggregateRoot<ProcessId>
 
     public void PublishDraft(
         Instant now,
-        int? newRevisionNumber = null)
+        string releaseNotes)
     {
         var oldDraft = Draft;
-
-        if (newRevisionNumber.HasValue)
-        {
-            ArgumentOutOfRangeException.ThrowIfEqual(newRevisionNumber.Value, int.MaxValue);
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(newRevisionNumber.Value);
-
-            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(
-                newRevisionNumber.Value, oldDraft.Number);
-        }
 
         ArgumentOutOfRangeException.ThrowIfLessThan(now, oldDraft.Created);
 
         var newDraft = Revision.CreateDraft(
             processId: Id,
             now: now,
-            revisionNumber: newRevisionNumber ?? oldDraft.Number + 1,
-            releaseNotes: string.Empty);
+            revisionNumber: oldDraft.Number + 1,
+            releaseNotes: releaseNotes);
 
         _revisions.Add(newDraft);
 

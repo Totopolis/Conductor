@@ -20,7 +20,7 @@ public class PublishProcessDraftTests
         var now = TimeProvider.System.GetInstantNow();
 
         // Act
-        _process.PublishDraft(now);
+        _process.PublishDraft(now, "My first process");
 
         // Assert
         Assert.Single(_process.Revisions, x => !x.IsDraft);

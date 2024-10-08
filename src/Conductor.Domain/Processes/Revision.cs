@@ -13,7 +13,8 @@ public sealed class Revision : Entity<RevisionId>
         int number,
         bool isDraft,
         string releaseNotes,
-        JsonElement content) : base(id)
+        JsonElement content,
+        Instant published) : base(id)
     {
         ProcessId = processId;
         Created = created;
@@ -21,6 +22,7 @@ public sealed class Revision : Entity<RevisionId>
         IsDraft = isDraft;
         ReleaseNotes = releaseNotes;
         Content = content;
+        Published = published;
     }
 
     public ProcessId ProcessId { get; init; }
@@ -35,6 +37,8 @@ public sealed class Revision : Entity<RevisionId>
     public string ReleaseNotes { get; private set; }
 
     public JsonElement Content { get; private set; }
+
+    public Instant Published { get; private set; }
 
     internal static Revision CreateDraft(
         ProcessId processId,
@@ -58,7 +62,8 @@ public sealed class Revision : Entity<RevisionId>
             number: revisionNumber,
             isDraft: true,
             releaseNotes,
-            content: Helpers.EmptyJsonElement);
+            content: Helpers.EmptyJsonElement,
+            published: Instant.MinValue);
     }
 
     public void ChangeReleaseNotes(string releaseNotes)
@@ -70,7 +75,7 @@ public sealed class Revision : Entity<RevisionId>
 
     public void Publish(Instant now)
     {
-        Created = now;
+        Published = now;
         IsDraft = false;
     }
 

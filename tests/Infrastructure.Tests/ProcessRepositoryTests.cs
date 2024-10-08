@@ -28,7 +28,7 @@ public class ProcessRepositoryTests : AbstractRepositoryTests
     public async Task SuccessInsertProcessWithOneRevision()
     {
         var now = TimeProvider.System.GetInstantNow();
-        _process.PublishDraft(now);
+        _process.PublishDraft(now, "My first process");
 
         var (repo, uow) = ResolveDbServices(_host);
 
@@ -40,7 +40,7 @@ public class ProcessRepositoryTests : AbstractRepositoryTests
     public async Task SuccessReadAggregate()
     {
         var now = TimeProvider.System.GetInstantNow();
-        _process.PublishDraft(now);
+        _process.PublishDraft(now, "My first process");
 
         using (var scope1 = _host.Services.CreateScope())
         {

@@ -16,7 +16,9 @@ public static class TestData
     public static Func<(Process, Revision)> CreateProcessWithOneRevision = () =>
     {
         var process = CreateProcessWithOnlyDraft();
-        process.PublishDraft(now: TimeProvider.System.GetInstantNow());
+        process.PublishDraft(
+            now: TimeProvider.System.GetInstantNow(),
+            releaseNotes: "My first process");
 
         var revision = process.Revisions.First();
         return (process, revision);

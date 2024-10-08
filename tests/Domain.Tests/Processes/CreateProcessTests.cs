@@ -55,7 +55,7 @@ public class CreateProcessTests
             DomainErrors.Process.NameAllCharsMustBeLetterOrDigitOrUnderscore];
 
         Assert.True(result.IsError);
-        Assert.Contains(expectedErrors, x => x == result);
+        Assert.Contains(expectedErrors, x => x == result.FirstError);
     }
 
     [Theory, CombinatorialData]
@@ -74,7 +74,7 @@ public class CreateProcessTests
             DomainErrors.Process.DisplaynameLengthMustBeGreater2];
 
         Assert.True(result.IsError);
-        Assert.Contains(expectedErrors, x => x == result);
+        Assert.Contains(expectedErrors, x => x == result.FirstError);
     }
 
     [Theory, CombinatorialData]
@@ -89,6 +89,6 @@ public class CreateProcessTests
             processNumber: number);
 
         Assert.True(result.IsError);
-        Assert.Equal(DomainErrors.Process.ProcessNumberValueIsOutOfRange, result);
+        Assert.Equal(DomainErrors.Process.ProcessNumberValueIsOutOfRange, result.FirstError);
     }
 }
