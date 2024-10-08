@@ -2,9 +2,9 @@
 
 public abstract class ToolArgument
 {
-    public string Name { get; protected set; } = default!;
+    public required string Name { get; init; }
 
-    public string Description { get; protected set; } = default!;
+    public required string Description { get; init; }
 
-    public bool IsRequired { get; protected set; }
+    public required bool IsRequired { get; init; }
 }

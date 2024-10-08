@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace LangModel.OpenAi;
+namespace LangModel.OpenAi.Settings;
 
 internal sealed class OpenAiSettingsValidator : AbstractValidator<OpenAiSettings>
 {

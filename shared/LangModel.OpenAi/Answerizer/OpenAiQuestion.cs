@@ -1,10 +1,10 @@
-﻿using LangModel.Abstractions;
+﻿using LangModel.Abstractions.Answerizer;
 using OpenAI.ObjectModels.RequestModels;
 using SharpToken;
 using System.Collections.Immutable;
 using static OpenAI.ObjectModels.StaticValues;
 
-namespace LangModel.OpenAi;
+namespace LangModel.OpenAi.Answerizer;
 
 internal sealed class OpenAiQuestion : Question
 {
@@ -29,7 +29,8 @@ internal sealed class OpenAiQuestion : Question
         _availableTools = availableTools.ToImmutableList();
     }
 
-    public override decimal Cost {
+    public override decimal Cost
+    {
         get
         {
             var encoder = GptEncoding.GetEncoding("o200k_base");
@@ -38,13 +39,13 @@ internal sealed class OpenAiQuestion : Question
                 _fishMemory.Sum(x => encoder.CountTokens(x.Content)) +
                 encoder.CountTokens(_userQuestion.Content);
 
-            var cost = OpenAiService.Incoming1kCost * tokensCount / 1000m;
+            var cost = AnswerizerService.Incoming1kCost * tokensCount / 1000m;
             return cost;
         }
     }
 
     public override bool NoSamplesAndNoFish =>
-        (!_samplesPrompts.Any() && !_fishMemory.Any());
+        !_samplesPrompts.Any() && !_fishMemory.Any();
 
     public IReadOnlyList<ChatMessage> Messages
     {

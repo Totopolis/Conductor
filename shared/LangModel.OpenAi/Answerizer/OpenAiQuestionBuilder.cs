@@ -1,4 +1,4 @@
-﻿using LangModel.Abstractions;
+﻿using LangModel.Abstractions.Answerizer;
 using LangModel.Tooling.Abstractions;
 using LangModel.Tooling.Abstractions.Arguments;
 using OpenAI.Builders;
@@ -6,7 +6,7 @@ using OpenAI.ObjectModels.RequestModels;
 using OpenAI.ObjectModels.SharedModels;
 using System.Collections.Immutable;
 
-namespace LangModel.OpenAi;
+namespace LangModel.OpenAi.Answerizer;
 
 internal class OpenAiQuestionBuilder : IQuestionBuilder
 {
@@ -39,10 +39,17 @@ internal class OpenAiQuestionBuilder : IQuestionBuilder
                             name: arg.Name,
                             value: PropertyDefinition.DefineInteger(arg.Description),
                             required: arg.IsRequired),
+
+                        IntegerArrayArgument intArrArg => builder.AddParameter(
+                            name: arg.Name,
+                            value: PropertyDefinition.DefineArray(PropertyDefinition.DefineInteger(arg.Description)),
+                            required: arg.IsRequired),
+
                         StringArgument strArg => builder.AddParameter(
                             name: arg.Name,
                             value: PropertyDefinition.DefineString(arg.Description),
                             required: arg.IsRequired),
+
                         _ => throw new NotImplementedException()
                     };
                 }

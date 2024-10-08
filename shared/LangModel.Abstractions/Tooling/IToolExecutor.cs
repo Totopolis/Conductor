@@ -1,6 +1,8 @@
-﻿namespace LangModel.Tooling.Abstractions;
+﻿using ErrorOr;
+
+namespace LangModel.Tooling.Abstractions;
 
 public interface IToolExecutor
 {
-    Task<string> Run(string argumentsJson, CancellationToken ct);
+    Task<ErrorOr<ToolResponse>> Run(ToolRequest request, CancellationToken ct);
 }

@@ -1,4 +1,4 @@
-﻿namespace LangModel.OpenAi;
+﻿namespace LangModel.OpenAi.Settings;
 
 public record OpenAiSettings
 {

@@ -1,5 +1,5 @@
 ﻿namespace LangModel.Tooling.Abstractions.Arguments;
 
-public sealed class IntegerArgument : ToolArgument
+public sealed class IntegerArrayArgument : ToolArgument
 {
 }

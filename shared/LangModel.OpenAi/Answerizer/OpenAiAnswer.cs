@@ -1,8 +1,8 @@
-﻿using LangModel.Abstractions;
+﻿using LangModel.Abstractions.Answerizer;
 using OpenAI.ObjectModels.RequestModels;
 using static OpenAI.ObjectModels.StaticValues;
 
-namespace LangModel.OpenAi;
+namespace LangModel.OpenAi.Answerizer;
 
 internal class OpenAiAnswer : Answer
 {

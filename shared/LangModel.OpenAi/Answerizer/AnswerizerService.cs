@@ -1,6 +1,7 @@
 ﻿using LangModel.Abstractions;
+using LangModel.Abstractions.Answerizer;
 using LangModel.Abstractions.Errors;
-using LangModel.Abstractions.Vectorize;
+using LangModel.Abstractions.Vectorizer;
 using LangModel.Tooling.Abstractions;
 using MathNet.Numerics.LinearAlgebra;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,18 +11,18 @@ using OpenAI.ObjectModels.RequestModels;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
-namespace LangModel.OpenAi;
+namespace LangModel.OpenAi.Answerizer;
 
-internal class OpenAiService : ILangModel
+internal sealed class AnswerizerService : IAnswerizerService
 {
-    public const decimal Incoming1kCost = 0.0432m;
-    public const decimal Outcoming1kCost = 0.1728m;
+    public const decimal Incoming1kCost = 0.72m;
+    public const decimal Outcoming1kCost = 2.88m;
 
     private readonly IOpenAIService _ai;
     private readonly IEnumerable<IToolDefinition> _allTools;
     private readonly IServiceProvider _serviceProvider;
 
-    public OpenAiService(
+    public AnswerizerService(
         IOpenAIService ai,
         IEnumerable<IToolDefinition> allTools,
         IServiceProvider serviceProvider)
@@ -55,10 +56,10 @@ internal class OpenAiService : ILangModel
                 // Type = StaticValues.CompletionStatics.ResponseFormat.Json
                 // },
                 Tools = aiQuestion.AvailableTools.ToList(),
-                Model = Models.Gpt_4o_mini,
+                Model = Models.Gpt_4o,
                 Temperature = 0.1f,
                 // optional
-                MaxTokens = 1000
+                MaxTokens = 2000
             };
 
             var messagesToAnswer = new List<ChatMessage>();
@@ -107,7 +108,7 @@ internal class OpenAiService : ILangModel
             var response = await _ai.ChatCompletion.CreateCompletion(request);
 
             accumStat.LangModelCalls++;
-            accumStat.LangModelDuration += (DateTime.UtcNow - startChat);
+            accumStat.LangModelDuration += DateTime.UtcNow - startChat;
 
             if (!response.Successful)
             {
@@ -128,7 +129,7 @@ internal class OpenAiService : ILangModel
             if (message.ToolCalls is not null)
             {
                 request.Messages.Add(message);
-                
+
                 // Tooling message
                 yield return message;
 
@@ -142,16 +143,30 @@ internal class OpenAiService : ILangModel
 
                     var toolExecutor = _serviceProvider.GetRequiredKeyedService<IToolExecutor>(
                         fn.Name);
-                    
+
+                    var toolRequest = ToolRequest.Create(fn.Arguments ?? "{}");
+                    if (toolRequest.IsError)
+                    {
+                        throw new BadAnswerException("Incorrect tool request");
+                    }
+
                     var startTool = DateTime.UtcNow;
-                    var toolResponse = await toolExecutor.Run(
-                        fn.Arguments ?? "{}",
+                    var toolResponseResult = await toolExecutor.Run(
+                        request: toolRequest.Value,
                         ct);
 
-                    accumStat.ToolsCalls++;
-                    accumStat.ToolsDuration += (DateTime.UtcNow - startTool);
+                    if (toolResponseResult.IsError)
+                    {
+                        throw new BadAnswerException("Error while tool executing");
+                    }
 
-                    var toolMessage = ChatMessage.FromTool(toolResponse, toolCall.Id!);
+                    accumStat.ToolsCalls++;
+                    accumStat.ToolsDuration += DateTime.UtcNow - startTool;
+
+                    var toolMessage = ChatMessage.FromTool(
+                        toolResponseResult.Value.Content,
+                        toolCall.Id!);
+
                     request.Messages.Add(toolMessage);
 
                     // Tool message

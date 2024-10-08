@@ -1,4 +1,4 @@
-﻿namespace LangModel.Abstractions;
+﻿namespace LangModel.Abstractions.Answerizer;
 
 public abstract class Answer
 {

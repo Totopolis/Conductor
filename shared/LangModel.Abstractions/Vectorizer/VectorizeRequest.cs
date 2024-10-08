@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace LangModel.Abstractions.Vectorize;
+namespace LangModel.Abstractions.Vectorizer;
 
 public class VectorizeRequest
 {
