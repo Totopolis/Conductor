@@ -1,15 +1,11 @@
-﻿using LangModel.Abstractions;
-using LangModel.Abstractions.Answerizer;
+﻿using LangModel.Abstractions.Answerizer;
+using LangModel.Abstractions.Common;
 using LangModel.Abstractions.Errors;
-using LangModel.Abstractions.Vectorizer;
 using LangModel.Tooling.Abstractions;
-using MathNet.Numerics.LinearAlgebra;
 using Microsoft.Extensions.DependencyInjection;
 using OpenAI.Interfaces;
 using OpenAI.ObjectModels;
 using OpenAI.ObjectModels.RequestModels;
-using System.Collections.Immutable;
-using System.Runtime.CompilerServices;
 
 namespace LangModel.OpenAi.Answerizer;
 
@@ -63,30 +59,15 @@ internal sealed class AnswerizerService : IAnswerizerService
             };
 
             var messagesToAnswer = new List<ChatMessage>();
-            var accumStat = new AccumStat();
 
-            await foreach (var message in ProcessRequest(aiRequest, accumStat, ct))
-            {
-                messagesToAnswer.Add(message);
-            }
-
-            var totalSpent = Incoming1kCost * accumStat.PromptsTokens / 1000m +
-                    Outcoming1kCost * accumStat.CompletionsTokens / 1000m;
-
-            var stat = new AnswerStat(
-                PromptsTokens: accumStat.PromptsTokens,
-                PromptsPrice: accumStat.PromptsTokens * Incoming1kCost / 1000m,
-                CompletionsTokens: accumStat.CompletionsTokens,
-                CompletionsPrice: accumStat.CompletionsTokens * Outcoming1kCost / 1000m,
-                TotalSpent: totalSpent,
-                LangModelCalls: accumStat.LangModelCalls,
-                LangModelDuration: accumStat.LangModelDuration,
-                ToolsCalls: accumStat.ToolsCalls,
-                ToolsDuration: accumStat.ToolsDuration);
+            var usageValue = await ProcessReq(
+                aiRequest,
+                messagesToAnswer,
+                ct);
 
             var answer = new OpenAiAnswer(messagesToAnswer)
             {
-                Stat = stat
+                Usage = usageValue
             };
 
             return answer;
@@ -97,26 +78,36 @@ internal sealed class AnswerizerService : IAnswerizerService
         }
     }
 
-    private async IAsyncEnumerable<ChatMessage> ProcessRequest(
+    private async Task<UsageValue> ProcessReq(
         ChatCompletionCreateRequest request,
-        AccumStat accumStat,
-        [EnumeratorCancellation] CancellationToken ct)
+        IList<ChatMessage> feed,
+        CancellationToken ct)
     {
+        var result = UsageValue.Empty;
+
         while (true)
         {
             var startChat = DateTime.UtcNow;
             var response = await _ai.ChatCompletion.CreateCompletion(request);
-
-            accumStat.LangModelCalls++;
-            accumStat.LangModelDuration += DateTime.UtcNow - startChat;
-
             if (!response.Successful)
             {
                 throw new BadAnswerException(response.Error!.Message!);
             }
 
-            accumStat.PromptsTokens += response.Usage.PromptTokens;
-            accumStat.CompletionsTokens += response.Usage.CompletionTokens ?? 0;
+            var oneUsage = new UsageValue
+            {
+                Prompt = CountPrice.Create(
+                    response.Usage.PromptTokens,
+                    response.Usage.PromptTokens * Incoming1kCost / 1000m),
+                Completion = CountPrice.Create(
+                    response.Usage.CompletionTokens ?? 0,
+                    (response.Usage.CompletionTokens ?? 0) * Outcoming1kCost / 1000m),
+                LangModel = CountDuration.Create(1, DateTime.UtcNow - startChat),
+                Tools = CountDuration.Empty,
+                Vectorizer = CountPrice.Empty
+            };
+
+            result += oneUsage;
 
             var choice = response.Choices.FirstOrDefault();
             if (choice is null)
@@ -131,7 +122,7 @@ internal sealed class AnswerizerService : IAnswerizerService
                 request.Messages.Add(message);
 
                 // Tooling message
-                yield return message;
+                feed.Add(message);
 
                 foreach (var toolCall in message.ToolCalls)
                 {
@@ -144,15 +135,14 @@ internal sealed class AnswerizerService : IAnswerizerService
                     var toolExecutor = _serviceProvider.GetRequiredKeyedService<IToolExecutor>(
                         fn.Name);
 
-                    var toolRequest = ToolRequest.Create(fn.Arguments ?? "{}");
-                    if (toolRequest.IsError)
+                    var toolRequestResult = ToolRequest.Create(fn.Arguments ?? "{}");
+                    if (toolRequestResult.IsError)
                     {
                         throw new BadAnswerException("Incorrect tool request");
                     }
 
-                    var startTool = DateTime.UtcNow;
                     var toolResponseResult = await toolExecutor.Run(
-                        request: toolRequest.Value,
+                        request: toolRequestResult.Value,
                         ct);
 
                     if (toolResponseResult.IsError)
@@ -160,81 +150,28 @@ internal sealed class AnswerizerService : IAnswerizerService
                         throw new BadAnswerException("Error while tool executing");
                     }
 
-                    accumStat.ToolsCalls++;
-                    accumStat.ToolsDuration += DateTime.UtcNow - startTool;
+                    var toolResponse = toolResponseResult.Value;
 
+                    result += toolResponse.Usage;
+                    
                     var toolMessage = ChatMessage.FromTool(
-                        toolResponseResult.Value.Content,
+                        toolResponse.Content,
                         toolCall.Id!);
 
                     request.Messages.Add(toolMessage);
 
                     // Tool message
-                    yield return toolMessage;
+                    feed.Add(toolMessage);
                 }
             }
             else
             {
                 // Assistant answer
-                yield return message;
-                yield break;
+                feed.Add(message);
+                break;
             }
         }
-    }
 
-    public async Task<VectorizeResponse> Vectorize(
-        VectorizeRequest request,
-        CancellationToken ct)
-    {
-        var usage = 0;
-        var zz = new List<Vector<double>>();
-        var xx = request.Content
-            .Chunk(100)
-            .ToList();
-
-        foreach (var it in xx)
-        {
-            var embeddindResponse = await _ai.Embeddings
-                    .CreateEmbedding(new EmbeddingCreateRequest()
-                    {
-                        InputAsList = it.ToList(),
-                        Model = Models.TextEmbeddingV3Large
-                    }, ct);
-
-            if (!embeddindResponse.Successful)
-            {
-                throw new VectorizationErrorException(
-                    embeddindResponse.Error?.Message ?? string.Empty);
-            }
-
-            usage += embeddindResponse.Usage.TotalTokens;
-
-            var vectors = embeddindResponse.Data
-                .OrderBy(x => x.Index)
-                .Select(x => Vector<double>.Build.DenseOfArray(x.Embedding.ToArray()));
-
-            zz.AddRange(vectors);
-        }
-
-        var response = new VectorizeResponse(
-            Embeddings: zz.ToImmutableArray(),
-            TokensUsage: usage);
-
-        return response;
-    }
-
-    private class AccumStat
-    {
-        public int LangModelCalls { get; set; } = 0;
-
-        public TimeSpan LangModelDuration { get; set; } = TimeSpan.FromSeconds(0);
-
-        public int ToolsCalls { get; set; } = 0;
-
-        public TimeSpan ToolsDuration { get; set; } = TimeSpan.FromSeconds(0);
-
-        public int PromptsTokens { get; set; } = 0;
-
-        public int CompletionsTokens { get; set; } = 0;
+        return result;
     }
 }

@@ -1,4 +1,5 @@
-﻿using LangModel.Abstractions.Errors;
+﻿using LangModel.Abstractions.Common;
+using LangModel.Abstractions.Errors;
 using LangModel.Abstractions.Vectorizer;
 using MathNet.Numerics.LinearAlgebra;
 using OpenAI.Interfaces;
@@ -10,8 +11,7 @@ namespace LangModel.OpenAi.Vectorizer;
 
 internal sealed class VectorizerService : IVectorizerService
 {
-    public const decimal Incoming1kCost = 0.0432m;
-    public const decimal Outcoming1kCost = 0.1728m;
+    public const decimal Incoming1kCost = 0.03744m;
 
     private readonly IOpenAIService _ai;
 
@@ -45,6 +45,7 @@ internal sealed class VectorizerService : IVectorizerService
                     embeddindResponse.Error?.Message ?? string.Empty);
             }
 
+            // TODO: check total is correct!!!
             usage += embeddindResponse.Usage.TotalTokens;
 
             var vectors = embeddindResponse.Data
@@ -54,9 +55,18 @@ internal sealed class VectorizerService : IVectorizerService
             zz.AddRange(vectors);
         }
 
+        var usageValue = new UsageValue
+        {
+            Prompt = CountPrice.Empty,
+            Completion = CountPrice.Empty,
+            Vectorizer = CountPrice.Create(usage, usage * Incoming1kCost / 1000m),
+            LangModel = CountDuration.Empty,
+            Tools = CountDuration.Empty
+        };
+
         var response = new VectorizeResponse(
             Embeddings: zz.ToImmutableArray(),
-            TokensUsage: usage);
+            Usage: usageValue);
 
         return response;
     }
