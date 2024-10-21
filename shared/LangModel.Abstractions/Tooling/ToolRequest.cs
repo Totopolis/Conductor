@@ -7,16 +7,22 @@ namespace LangModel.Tooling.Abstractions;
 
 public sealed class ToolRequest
 {
+    private readonly Guid _correlationId;
     private readonly JsonDocument _doc;
 
-    private ToolRequest(JsonDocument doc)
+    private ToolRequest(
+        Guid correlationId,
+        JsonDocument doc)
     {
+        _correlationId = correlationId;
         _doc = doc;
     }
 
+    public Guid CorrelationId => _correlationId;
+
     public JsonElement Data => _doc.RootElement;
 
-    public static ErrorOr<ToolRequest> Create(string content)
+    public static ErrorOr<ToolRequest> Create(Guid correlationId, string content)
     {
         if (string.IsNullOrWhiteSpace(content))
         {
@@ -33,7 +39,7 @@ public sealed class ToolRequest
             return LangModelErrors.ToolRequest.ContentIsNotCorrectJson;
         }
 
-        return new ToolRequest(doc);
+        return new ToolRequest(correlationId, doc);
     }
 
     public ErrorOr<T> CastTo<T>() where T : class

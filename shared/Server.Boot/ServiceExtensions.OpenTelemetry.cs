@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry;
@@ -28,22 +27,20 @@ public static partial class ServiceExtensions
         return httpClient;
     };
 
-    public static void AddOpenTelemetry(
+    public static IServiceCollection AddOpenTelemetryLogs(
         this IServiceCollection services,
-        IConfiguration configuration,
-        IWebHostEnvironment environment)
+        WebApplicationBuilder builder)
     {
+        IWebHostEnvironment environment = builder.Environment;
+        
         // var toBase64 = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_instance}:{_token}"));
-
-        var settings = configuration.ValidateAndReturnPreBuildSettings<
+        var settings = builder.Configuration.ValidateAndReturnPreBuildSettings<
             OpenTelemetrySettings,
             OpenTelemetrySettingsValidator>(OpenTelemetrySettings.SectionName);
 
-        if (!settings.EnableLogs &&
-            !settings.EnableMetrics &&
-            !settings.EnableTraces)
+        if (!settings.EnableLogs)
         {
-            return;
+            return services;
         }
 
         var attributes = new Dictionary<string, object>
@@ -52,42 +49,15 @@ public static partial class ServiceExtensions
             { "host", Dns.GetHostName() }
         };
 
-        if (settings.EnableMetrics || settings.EnableTraces)
+        if (settings.SuppressConsole)
         {
-            var openTelemetryBuilder = services
-                .AddOpenTelemetry()
-                .ConfigureResource(rb =>
-                {
-                    rb.AddService(settings.ServiceName).AddAttributes(attributes);
-                });
-
-            if (settings.EnableTraces)
-            {
-                EnableTraces(openTelemetryBuilder, settings);
-            }
-
-            if (settings.EnableMetrics)
-            {
-                EnableMetrics(openTelemetryBuilder, settings);
-            }
+            builder.Logging.ClearProviders();
         }
 
-        if (settings.EnableLogs)
-        {
-            // builder.Logging.ClearProviders();
-            // EnableLogs(builder, settings, attributes);
-        }
-    }
-
-    private static void EnableLogs(
-        WebApplicationBuilder builder,
-        OpenTelemetrySettings settings,
-        Dictionary<string, object> attributes)
-    {
         var resourceBuilder = ResourceBuilder
-                .CreateDefault()
-                .AddAttributes(attributes)
-                .AddService(settings.ServiceName);
+            .CreateDefault()
+            .AddAttributes(attributes)
+            .AddService(settings.ServiceName);
 
         builder.Logging.AddOpenTelemetry(logging =>
         {
@@ -104,15 +74,63 @@ public static partial class ServiceExtensions
                     opt.HttpClientFactory = () => _httpClientFactory(settings.Headers);
                 });
         });
+
+        return services;
+    }
+
+    public static IServiceCollection AddOpenTelemetryTracesOrMetrics(
+        this IServiceCollection services,
+        WebApplicationBuilder builder,
+        Action<TracerProviderBuilder> tracerProviderBuilder,
+        Action<MeterProviderBuilder> meterProviderBuilder)
+    {
+        IWebHostEnvironment environment = builder.Environment;
+
+        var settings = builder.Configuration.ValidateAndReturnPreBuildSettings<
+            OpenTelemetrySettings,
+            OpenTelemetrySettingsValidator>(OpenTelemetrySettings.SectionName);
+
+        if (!settings.EnableMetrics && !settings.EnableTraces)
+        {
+            return services;
+        }
+
+        var attributes = new Dictionary<string, object>
+        {
+            { "env", environment.EnvironmentName },
+            { "host", Dns.GetHostName() }
+        };
+
+        var openTelemetryBuilder = services
+            .AddOpenTelemetry()
+            .ConfigureResource(rb =>
+            {
+                rb.AddService(settings.ServiceName).AddAttributes(attributes);
+            });
+
+        if (settings.EnableTraces)
+        {
+            EnableTraces(openTelemetryBuilder, settings, tracerProviderBuilder);
+        }
+
+        if (settings.EnableMetrics)
+        {
+            EnableMetrics(openTelemetryBuilder, settings, meterProviderBuilder);
+        }
+
+        return services;
     }
 
     private static void EnableTraces(
         OpenTelemetryBuilder openTelemetryBuilder,
-        OpenTelemetrySettings settings)
+        OpenTelemetrySettings settings,
+        Action<TracerProviderBuilder> tracerProviderBuilder)
     {
         openTelemetryBuilder
             .WithTracing(cfg =>
             {
+                tracerProviderBuilder(cfg);
+
                 cfg.AddAspNetCoreInstrumentation()
                 // .AddConsoleExporter()
                 .AddOtlpExporter(opt =>
@@ -127,11 +145,14 @@ public static partial class ServiceExtensions
 
     private static void EnableMetrics(
         OpenTelemetryBuilder openTelemetryBuilder,
-        OpenTelemetrySettings settings)
+        OpenTelemetrySettings settings,
+        Action<MeterProviderBuilder> meterProviderBuilder)
     {
         openTelemetryBuilder
             .WithMetrics(cfg =>
             {
+                meterProviderBuilder(cfg);
+
                 cfg.AddAspNetCoreInstrumentation()
                    .AddRuntimeInstrumentation()
                    .AddHttpClientInstrumentation()

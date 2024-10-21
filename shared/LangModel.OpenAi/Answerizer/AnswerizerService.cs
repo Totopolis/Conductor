@@ -1,11 +1,15 @@
 ﻿using LangModel.Abstractions.Answerizer;
 using LangModel.Abstractions.Common;
+using LangModel.Abstractions.Diagnostics;
 using LangModel.Abstractions.Errors;
 using LangModel.Tooling.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using OpenAI.Interfaces;
 using OpenAI.ObjectModels;
 using OpenAI.ObjectModels.RequestModels;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Unicode;
 
 namespace LangModel.OpenAi.Answerizer;
 
@@ -17,15 +21,18 @@ internal sealed class AnswerizerService : IAnswerizerService
     private readonly IOpenAIService _ai;
     private readonly IEnumerable<IToolDefinition> _allTools;
     private readonly IServiceProvider _serviceProvider;
+    private readonly TracerComposite _tracerComposite;
 
     public AnswerizerService(
         IOpenAIService ai,
         IEnumerable<IToolDefinition> allTools,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        TracerComposite tracerComposite)
     {
         _ai = ai;
         _allTools = allTools;
         _serviceProvider = serviceProvider;
+        _tracerComposite = tracerComposite;
     }
 
     public IQuestionBuilder CreateQuestion()
@@ -61,6 +68,7 @@ internal sealed class AnswerizerService : IAnswerizerService
             var messagesToAnswer = new List<ChatMessage>();
 
             var usageValue = await ProcessReq(
+                question.CorrelationId,
                 aiRequest,
                 messagesToAnswer,
                 ct);
@@ -79,6 +87,7 @@ internal sealed class AnswerizerService : IAnswerizerService
     }
 
     private async Task<UsageValue> ProcessReq(
+        Guid correlationId,
         ChatCompletionCreateRequest request,
         IList<ChatMessage> feed,
         CancellationToken ct)
@@ -94,20 +103,14 @@ internal sealed class AnswerizerService : IAnswerizerService
                 throw new BadAnswerException(response.Error!.Message!);
             }
 
-            var oneUsage = new UsageValue
-            {
-                Prompt = CountPrice.Create(
-                    response.Usage.PromptTokens,
-                    response.Usage.PromptTokens * Incoming1kCost / 1000m),
-                Completion = CountPrice.Create(
-                    response.Usage.CompletionTokens ?? 0,
-                    (response.Usage.CompletionTokens ?? 0) * Outcoming1kCost / 1000m),
-                LangModel = CountDuration.Create(1, DateTime.UtcNow - startChat),
-                Tools = CountDuration.Empty,
-                Vectorizer = CountPrice.Empty
-            };
+            var stepUsage = UsageValue.CreateSingleAnswerizer(
+                promptTokens: response.Usage.PromptTokens,
+                prompt1kCost: Incoming1kCost,
+                completionTokens: response.Usage.CompletionTokens,
+                completion1kCost: Outcoming1kCost,
+                span: DateTime.UtcNow - startChat);
 
-            result += oneUsage;
+            result += stepUsage;
 
             var choice = response.Choices.FirstOrDefault();
             if (choice is null)
@@ -116,6 +119,19 @@ internal sealed class AnswerizerService : IAnswerizerService
             }
 
             var message = choice.Message;
+
+            var options1 = new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
+                WriteIndented = true
+            };
+
+            // Trace step
+            await _tracerComposite.Trace(
+                kind: LangModelTracerKind.Complete,
+                request: JsonSerializer.SerializeToElement(request.Messages, options1),
+                response: JsonSerializer.SerializeToElement(message, options1),
+                usage: stepUsage);
 
             if (message.ToolCalls is not null)
             {
@@ -135,7 +151,10 @@ internal sealed class AnswerizerService : IAnswerizerService
                     var toolExecutor = _serviceProvider.GetRequiredKeyedService<IToolExecutor>(
                         fn.Name);
 
-                    var toolRequestResult = ToolRequest.Create(fn.Arguments ?? "{}");
+                    var toolRequestResult = ToolRequest.Create(
+                        correlationId,
+                        fn.Arguments ?? "{}");
+
                     if (toolRequestResult.IsError)
                     {
                         throw new BadAnswerException("Incorrect tool request");

@@ -4,6 +4,8 @@ public record OpenTelemetrySettings
 {
     public const string SectionName = "OpenTelemetry";
 
+    public bool SuppressConsole { get; init; }
+
     public bool EnableLogs { get; init; }
 
     public bool EnableMetrics { get; init; }

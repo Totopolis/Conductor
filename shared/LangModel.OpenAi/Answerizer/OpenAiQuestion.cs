@@ -8,6 +8,7 @@ namespace LangModel.OpenAi.Answerizer;
 
 internal sealed class OpenAiQuestion : Question
 {
+    private readonly Guid _correlationId;
     private readonly ChatMessage _systemMessage;
     private readonly ImmutableList<ChatMessage> _samplesPrompts;
     private readonly ImmutableList<ChatMessage> _fishMemory;
@@ -16,12 +17,14 @@ internal sealed class OpenAiQuestion : Question
     private readonly ImmutableList<ToolDefinition> _availableTools;
 
     internal OpenAiQuestion(
+        Guid correlationId,
         ChatMessage systemMessage,
         IEnumerable<ChatMessage> samplesPrompt,
         IEnumerable<ChatMessage> fishMemory,
         ChatMessage userQuestion,
         IEnumerable<ToolDefinition> availableTools)
     {
+        _correlationId = correlationId;
         _systemMessage = systemMessage;
         _samplesPrompts = samplesPrompt.ToImmutableList();
         _fishMemory = fishMemory.ToImmutableList();
@@ -29,11 +32,14 @@ internal sealed class OpenAiQuestion : Question
         _availableTools = availableTools.ToImmutableList();
     }
 
+    public override Guid CorrelationId => _correlationId;
+
     public override decimal Cost
     {
         get
         {
             var encoder = GptEncoding.GetEncoding("o200k_base");
+            // TODO: calculate tools price!!!
             var tokensCount = encoder.CountTokens(_systemMessage.Content) +
                 _samplesPrompts.Sum(x => encoder.CountTokens(x.Content)) +
                 _fishMemory.Sum(x => encoder.CountTokens(x.Content)) +
@@ -82,6 +88,7 @@ internal sealed class OpenAiQuestion : Question
                 .Skip(1);
 
             return new OpenAiQuestion(
+                correlationId: _correlationId,
                 systemMessage: _systemMessage,
                 samplesPrompt: _samplesPrompts,
                 fishMemory: sequence,
@@ -96,6 +103,7 @@ internal sealed class OpenAiQuestion : Question
                 .Skip(1);
 
             return new OpenAiQuestion(
+                correlationId: _correlationId,
                 systemMessage: _systemMessage,
                 samplesPrompt: sequence,
                 fishMemory: [],

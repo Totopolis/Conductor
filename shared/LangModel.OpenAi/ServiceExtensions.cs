@@ -1,5 +1,4 @@
-﻿using LangModel.Abstractions;
-using LangModel.Abstractions.Answerizer;
+﻿using LangModel.Abstractions.Answerizer;
 using LangModel.Abstractions.Vectorizer;
 using LangModel.OpenAi.Answerizer;
 using LangModel.OpenAi.Settings;
@@ -21,11 +20,14 @@ public static class ServiceExtensions
             OpenAiSettings,
             OpenAiSettingsValidator>(OpenAiSettings.SectionName);
 
-        services.AddSingleton<IAnswerizerService, AnswerizerService>();
-        services.AddSingleton<IQuestionBuilder, OpenAiQuestionBuilder>();
+        services.AddScoped<IAnswerizerService, AnswerizerService>();
+        services.AddTransient<IQuestionBuilder, OpenAiQuestionBuilder>();
 
-        services.AddSingleton<IVectorizerService, VectorizerService>();
+        services.AddScoped<IVectorizerService, VectorizerService>();
 
+        services.AddScoped<TracerComposite>();
+
+        // TODO: use separated named oai services
         services.AddOpenAIService(settings =>
         {
             // TODO: use options

@@ -1,8 +1,8 @@
 ﻿namespace LangModel.Abstractions.Common;
 
-public sealed class CountPrice
+public sealed class TokenCountPrice
 {
-    private CountPrice()
+    private TokenCountPrice()
     {
     }
 
@@ -10,27 +10,27 @@ public sealed class CountPrice
 
     public required decimal Price { get; init; }
 
-    public static readonly CountPrice Empty = new CountPrice
+    public static readonly TokenCountPrice Empty = new TokenCountPrice
     {
         Count = 0,
         Price = 0
     };
 
-    public static CountPrice Create(int count, decimal price)
+    public static TokenCountPrice Create(int count, decimal price)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(count, 0);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(price, 0);
 
-        return new CountPrice
+        return new TokenCountPrice
         {
             Count = count,
             Price = price
         };
     }
 
-    public static CountPrice operator +(CountPrice left, CountPrice right)
+    public static TokenCountPrice operator +(TokenCountPrice left, TokenCountPrice right)
     {
-        return new CountPrice
+        return new TokenCountPrice
         {
             Count = left.Count + right.Count,
             Price = left.Price + right.Price

@@ -12,6 +12,7 @@ internal class OpenAiQuestionBuilder : IQuestionBuilder
 {
     private readonly IReadOnlyList<IToolDefinition> _allTools;
 
+    private Guid _correlationId = Guid.Empty;
     private ChatMessage _systemMessage = default!;
     private List<ChatMessage> _samplesPrompts = new();
     private List<ChatMessage> _fishMemory = new();
@@ -22,6 +23,12 @@ internal class OpenAiQuestionBuilder : IQuestionBuilder
     public OpenAiQuestionBuilder(IEnumerable<IToolDefinition> allTools)
     {
         _allTools = allTools.ToImmutableList();
+    }
+
+    public IQuestionBuilder SetCorrelationId(Guid correlationId)
+    {
+        _correlationId = correlationId;
+        return this;
     }
 
     public IQuestionBuilder AddTooling(IEnumerable<string> toolsTags)
@@ -137,6 +144,7 @@ internal class OpenAiQuestionBuilder : IQuestionBuilder
         }
 
         return new OpenAiQuestion(
+            correlationId: _correlationId,
             systemMessage: _systemMessage,
             samplesPrompt: _samplesPrompts,
             fishMemory: _fishMemory,

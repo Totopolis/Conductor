@@ -1,5 +1,7 @@
 ﻿namespace LangModel.Abstractions.Answerizer;
 
+// TODO: убрать стринги - использовать типизированные айтемы
+// + Перенести из хелперов сюда методы по наполнению?
 public interface IQuestionBuilder
 {
     // IQuestionBuilder AddLimit(double money);

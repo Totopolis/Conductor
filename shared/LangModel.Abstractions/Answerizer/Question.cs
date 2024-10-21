@@ -2,6 +2,8 @@
 
 public abstract class Question
 {
+    public abstract Guid CorrelationId { get; }
+
     public abstract decimal Cost { get; }
 
     public abstract bool NoSamplesAndNoFish { get; }

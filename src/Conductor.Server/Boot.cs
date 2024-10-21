@@ -2,6 +2,8 @@
 using Conductor.Application;
 using Conductor.Infrastructure;
 using FastEndpoints;
+using MassTransit.Logging;
+using MassTransit.Monitoring;
 using Microsoft.AspNetCore.Http.Json;
 using Server.Boot;
 
@@ -18,7 +20,21 @@ public static class Boot
         builder.Services.Configure<JsonOptions>(o => o.SerializerOptions.WriteIndented = true);
 
         builder.Services.AddHttpClient();
-        // builder.Services.AddOpenTelemetry(builder.Configuration, builder.Environment);
+
+        builder.Services
+            .AddOpenTelemetryLogs(builder)
+            .AddOpenTelemetryTracesOrMetrics(
+                builder,
+                tracerProviderBuilder: tpb =>
+                {
+                    // Masstransit
+                    tpb.AddSource(DiagnosticHeaders.DefaultListenerName);
+                },
+                meterProviderBuilder: mpb =>
+                {
+                    // Masstransit
+                    mpb.AddMeter(InstrumentationOptions.MeterName);
+                });
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();

@@ -65,7 +65,7 @@ internal class CreateProcessEndpoint : Endpoint<
         // will be additionally checked at the app layer.
         var command = _mapper.Map<CreateProcessCommand>(req);
 
-        var commandResult = await _mediator.Send(command);
+        var commandResult = await _mediator.Send(command, ct);
         if (commandResult.IsError)
         {
             commandResult.ErrorsOrEmptyList

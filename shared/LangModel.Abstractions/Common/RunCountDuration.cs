@@ -1,8 +1,8 @@
 ﻿namespace LangModel.Abstractions.Common;
 
-public class CountDuration
+public class RunCountDuration
 {
-    private CountDuration()
+    private RunCountDuration()
     {
     }
 
@@ -10,26 +10,26 @@ public class CountDuration
 
     public required TimeSpan Duration { get; init; }
 
-    public static readonly CountDuration Empty = new CountDuration
+    public static readonly RunCountDuration Empty = new RunCountDuration
     {
         Count = 0,
         Duration = TimeSpan.Zero
     };
 
-    public static CountDuration Create(int count, TimeSpan duration)
+    public static RunCountDuration Create(int count, TimeSpan duration)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(count, 0);
 
-        return new CountDuration
+        return new RunCountDuration
         {
             Count = count,
             Duration = duration
         };
     }
 
-    public static CountDuration operator +(CountDuration left, CountDuration right)
+    public static RunCountDuration operator +(RunCountDuration left, RunCountDuration right)
     {
-        return new CountDuration
+        return new RunCountDuration
         {
             Count = left.Count + right.Count,
             Duration = left.Duration + right.Duration
