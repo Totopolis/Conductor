@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System.Net;
 
 namespace Conductor.Api.Diagnostics;
@@ -24,21 +25,40 @@ public static class ExceptionHandlerExtensions
             return;
         }
 
-        var problemInstance = exHandlerFeature.Endpoint?.DisplayName?.Split(" => ")[0] ?? string.Empty;
         ctx.Response.ContentType = "application/problem+json";
+        var cancellationToken = ctx.RequestAborted;
+
+        var problemInstance = exHandlerFeature.Endpoint?.DisplayName?.Split(" => ")[0] ?? string.Empty;
+        var logger = ctx.Resolve<ILogger>();
 
         if (exHandlerFeature.Error is ErrorOrException errorOr)
         {
             var problem = errorOr.ConvertToProblem(problemInstance);
             ctx.Response.StatusCode = problem.Status;
-            
-            await ctx.Response.WriteAsJsonAsync(problem);
+
+            var problemTitle = problem.Title;
+            var problemReason = problem.Detail;
+
+            logger.LogError(
+                exception: exHandlerFeature.Error,
+                message: "[Application error {@ProblemTitle}] at [{@ProblemInstance}] due to [{@ProblemReason}]",
+                args: [problemTitle, problemInstance, problemReason]);
+
+            await ctx.Response.WriteAsJsonAsync(problem, cancellationToken);
         }
         else
         {
+            var exceptionType = exHandlerFeature.Error.GetType().Name;
+            var problemReason = exHandlerFeature.Error.Message;
+            var stackTrace = exHandlerFeature.Error.StackTrace;
+
+            logger.LogError(
+                exception: exHandlerFeature.Error,
+                message: "[Unhandled exception {@ExceptionType}] at [{@ProblemInstance}] due to [{@ProblemReason}]. StackTrace: [{@StackTrace}]",
+                args: [exceptionType, problemInstance, problemReason, stackTrace]);
+
             ctx.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-            // TODO: если в разработке или стейджинге - кидать на клиент трейсы ошибок!!!
             var problem = new ProblemDetails
             {
                 Instance = problemInstance,
@@ -46,8 +66,7 @@ public static class ExceptionHandlerExtensions
                 Detail = "One or more errors occurred"
             };
 
-            // TODO: писать в логгер
-            await ctx.Response.WriteAsJsonAsync(problem);
+            await ctx.Response.WriteAsJsonAsync(problem, cancellationToken);
         }
     }
 }
