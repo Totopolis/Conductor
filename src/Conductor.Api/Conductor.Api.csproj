@@ -5,6 +5,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\modules\bi\Bi.Contracts\Bi.Contracts.csproj" />
 		<ProjectReference Include="..\..\shared\Application.Shared\Application.Shared.csproj" />
 	</ItemGroup>
 </Project>

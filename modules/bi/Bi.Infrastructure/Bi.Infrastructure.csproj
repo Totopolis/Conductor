@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<ItemGroup>
+		<PackageReference Include="Ardalis.SmartEnum.EFCore" />
+		<PackageReference Include="FluentValidation" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NodaTime" />
+
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\shared\Infrastructure.Shared\Infrastructure.Shared.csproj" />
+		<ProjectReference Include="..\Bi.Application\Bi.Application.csproj" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<Folder Include="Migrations\" />
+	</ItemGroup>
+</Project>

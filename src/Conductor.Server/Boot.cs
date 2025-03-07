@@ -1,4 +1,5 @@
 ﻿using Application.Shared.Settings;
+using Bi.Infrastructure;
 using Conductor.Api;
 using Conductor.Api.Diagnostics;
 using Conductor.Server.Settings;
@@ -71,9 +72,9 @@ internal static class Boot
         builder.Services
             .AddSingleton<TimeProvider>(x => TimeProvider.System);
 
-        /*builder.Services
-            .AddMyModuleApplicationOptions()
-            .AddMyModuleInfrastructureOptions();*/
+        builder.Services
+            // .AddBiApplicationOptions()
+            .AddBiInfrastructureOptions();
 
         builder.Services.AddSettingsWithValidation<
             StartupSettings,
@@ -81,9 +82,9 @@ internal static class Boot
             ServerModule>();
 
         // Services
-        /*builder.Services
-            .AddMyModuleApplicationServices(builder.Configuration)
-            .AddMyModuleInfrastructureServices(builder.Configuration);*/
+        builder.Services
+            // .AddMyModuleApplicationServices(builder.Configuration)
+            .AddBiInfrastructureServices(builder.Configuration);
 
         // Infrastructure shared services: system info & eventBusPublisher
         builder.Services

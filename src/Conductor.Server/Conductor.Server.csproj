@@ -8,6 +8,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\modules\bi\Bi.Infrastructure\Bi.Infrastructure.csproj" />
 	  <ProjectReference Include="..\..\shared\Server.Shared\Server.Shared.csproj" />
 	  <ProjectReference Include="..\Conductor.Api\Conductor.Api.csproj" />
 	</ItemGroup>

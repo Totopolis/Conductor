@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<ItemGroup>
+		<PackageReference Include="Mediatr" />
+		<PackageReference Include="MassTransit" />
+		<PackageReference Include="MassTransit.Abstractions" />
+		<PackageReference Include="FluentValidation" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+		<PackageReference Include="Microsoft.Extensions.Options" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\shared\Application.Shared\Application.Shared.csproj" />
+		<ProjectReference Include="..\Bi.Contracts\Bi.Contracts.csproj" />
+		<ProjectReference Include="..\Bi.Domain\Bi.Domain.csproj" />
+	</ItemGroup>
+</Project>
