@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<ItemGroup>
+		<PackageReference Include="FluentValidation" />
+		<PackageReference Include="Microsoft.Extensions.Options" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <ProjectReference Include="..\Domain.Shared\Domain.Shared.csproj" />
+	</ItemGroup>
+</Project>

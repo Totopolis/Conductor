@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<ItemGroup>
+		<PackageReference Include="AutoMapper" />
+		<PackageReference Include="FastEndpoints" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\shared\Application.Shared\Application.Shared.csproj" />
+	</ItemGroup>
+</Project>
