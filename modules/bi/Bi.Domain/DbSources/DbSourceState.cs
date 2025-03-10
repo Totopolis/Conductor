@@ -33,4 +33,6 @@ public class DbSourceState : SmartEnum<DbSourceKind>
     public bool IsNotValid => this == NotValid;
 
     public bool IsReady => this == Ready;
+
+    public bool IsBusy => !IsReady;
 }

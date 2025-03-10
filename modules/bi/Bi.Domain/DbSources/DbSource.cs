@@ -57,11 +57,11 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
         string privateNotes,
         string description,
         string connectionString,
-        DbSourceSchemaMode schemaMode,
+        string schemaMode,
         string schema,
         Instant now)
     {
-        var errors = ValidateCreateFields(
+        var errors = ValidateFields(
             kind,
             name,
             privateNotes,
@@ -84,28 +84,31 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
             privateNotes: privateNotes,
             description: description,
             connectionString: connectionString,
-            schemaMode: schemaMode,
+            schemaMode: DbSourceSchemaMode.FromName(schemaMode, ignoreCase: true),
             schema: schema,
             state: DbSourceState.Setup,
             stateChanged: now);
 
-        dataSource.RaiseDomainEvent(new DbSourceCreated(
-            Id: id,
-            Name: dataSource.Name));
+        dataSource.ChangedAction();
 
         return dataSource;
     }
 
-    public static IEnumerable<Error> ValidateCreateFields(
+    public static IEnumerable<Error> ValidateFields(
         string kind,
         string name,
         string privateNotes,
         string description,
         string connectionString,
-        DbSourceSchemaMode schemaMode,
+        string schemaMode,
         string schema,
         Instant now)
     {
+        if (!DbSourceSchemaMode.TryFromName(schemaMode, ignoreCase: true, out _))
+        {
+            yield return DomainErrors.UnknownSchemaMode;
+        }
+
         if (string.IsNullOrWhiteSpace(name) || name.Length < 3)
         {
             yield return DomainErrors.BadNameFormat;
@@ -125,19 +128,133 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
         }
     }
 
-    public void ChangeDescription(string newDescription)
+    public void SetState(DbSourceState newState, Instant now)
     {
-        Description = newDescription;
+        if (newState != State)
+        {
+            State = newState;
+            StateChanged = now;
+        }
+
+        if (newState.IsSetup)
+        {
+            RaiseDomainEvent(new NeedSetupDbSource(
+                Id: Id,
+                Name: Name));
+        }
     }
 
-    public void ChangeState(DbSourceState newState, Instant now)
+    public void UpdateOnlySchema(string schema)
     {
-        State = newState;
-        StateChanged = now;
+        if (schema != Schema)
+        {
+            Schema = schema;
+            ChangedAction();
+        }
     }
 
-    public void UpdateSchema(string schema)
+    public ErrorOr<Success> RaiseNeedUpdateEventOrError(
+        string name,
+        string privateNotes,
+        string description,
+        string connectionString,
+        string schemaMode,
+        string schema,
+        Instant now)
     {
-        Schema = schema;
+        var errors = ValidateFields(
+            kind: Kind.Name,
+            name: name,
+            privateNotes: privateNotes,
+            description: description,
+            connectionString: connectionString,
+            schemaMode: schemaMode,
+            schema: schema,
+            now: now).ToList();
+
+        if (errors.Count > 1)
+        {
+            return errors;
+        }
+
+        RaiseDomainEvent(new NeedUpdateDbSource(
+            Id: Id,
+            Name: name,
+            PrivateNotes: privateNotes,
+            Description: description,
+            ConnectionString: connectionString,
+            SchemaMode: DbSourceSchemaMode.FromName(schemaMode, ignoreCase: true),
+            ManualSchema: schema));
+
+        return Result.Success;
+    }
+
+    public void UpdateDefinition(
+        string name,
+        string privateNotes,
+        string description,
+        string connectionString,
+        DbSourceSchemaMode schemaMode,
+        string schema)
+    {
+        bool changes = false;
+
+        if (name != Name)
+        {
+            Name = name;
+            changes = true;
+        }
+
+        if (privateNotes != PrivateNotes)
+        {
+            PrivateNotes = privateNotes;
+            changes = true;
+        }
+
+        if (description != Description)
+        {
+            Description = description;
+            changes = true;
+        }
+
+        if (connectionString != ConnectionString)
+        {
+            ConnectionString = connectionString;
+            changes = true;
+        }
+
+        if (schemaMode != SchemaMode)
+        {
+            SchemaMode = schemaMode;
+            changes = true;
+        }
+
+        if (schema != Schema)
+        {
+            Schema = schema;
+            changes = true;
+        }
+
+        if (changes)
+        {
+            ChangedAction();
+        }
+    }
+
+    private void ChangedAction()
+    {
+        var notChanges = GetDomainEvents()
+            .Where(x => x is not DbSourceChanged)
+            .ToList();
+
+        ClearDomainEvents();
+
+        notChanges.Add(new DbSourceChanged(Id: Id, Name: Name));
+
+        // Reraise merged changes
+        foreach (var it in notChanges)
+        {
+            RaiseDomainEvent(it);
+        }
     }
 }

@@ -16,40 +16,28 @@ public sealed class CreateDataSourceHandler : IRequestHandler<
     private readonly IDbSourceRepository _dataSourceRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
-    private readonly ILogger<CreateDataSourceHandler> _logger;
 
     public CreateDataSourceHandler(
         IDbSourceRepository dataSourceRepository,
         IUnitOfWork unitOfWork,
-        TimeProvider timeProvider,
-        ILogger<CreateDataSourceHandler> logger)
+        TimeProvider timeProvider)
     {
         _dataSourceRepository = dataSourceRepository;
         _unitOfWork = unitOfWork;
         _timeProvider = timeProvider;
-        _logger = logger;
     }
 
     public async Task<ErrorOr<CreateDbSourceCommandResponse>> Handle(
         CreateDbSourceCommand request,
         CancellationToken cancellationToken)
     {
-        if (!DbSourceSchemaMode.TryFromName(
-            request.SchemaMode.ToString(),
-            ignoreCase: true,
-            out var schemaMode))
-        {
-            _logger.LogError("Bad DbSourceSchemaMode name {0}", request.SchemaMode.ToString());
-            return ApplicationErrors.UnexpectedError;
-        }
-
         var dataSourceOrError = DbSource.CreateNew(
             kind: request.Kind,
             name: request.Name,
             privateNotes: request.PrivateNotes,
             description: request.Description,
             connectionString: request.ConnectionString,
-            schemaMode: schemaMode,
+            schemaMode: request.SchemaMode.ToString(),
             schema: request.ManualSchema,
             now: _timeProvider.GetInstantNow());
 

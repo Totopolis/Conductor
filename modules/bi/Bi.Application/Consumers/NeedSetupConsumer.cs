@@ -8,20 +8,21 @@ using Microsoft.Extensions.Logging;
 
 namespace Bi.Application.Consumers;
 
-internal sealed class DbSourceCreatedConsumer : IConsumer<DbSourceCreated>
+internal sealed class NeedSetupConsumer :
+    IConsumer<NeedSetupDbSource>
 {
     private readonly IDbSourceRepository _dbSourceRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
     private readonly IPostgresConnector _postgresConnector;
-    private readonly ILogger<DbSourceCreatedConsumer> _logger;
+    private readonly ILogger<NeedSetupConsumer> _logger;
 
-    public DbSourceCreatedConsumer(
+    public NeedSetupConsumer(
         IDbSourceRepository dbSourceRepository,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider,
         IPostgresConnector postgresConnector,
-        ILogger<DbSourceCreatedConsumer> logger)
+        ILogger<NeedSetupConsumer> logger)
     {
         _dbSourceRepository = dbSourceRepository;
         _unitOfWork = unitOfWork;
@@ -31,7 +32,7 @@ internal sealed class DbSourceCreatedConsumer : IConsumer<DbSourceCreated>
     }
 
     // TODO: use polly retry policies
-    public async Task Consume(ConsumeContext<DbSourceCreated> context)
+    public async Task Consume(ConsumeContext<NeedSetupDbSource> context)
     {
         var now = _timeProvider.GetInstantNow();
         var msg = context.Message;
@@ -48,14 +49,19 @@ internal sealed class DbSourceCreatedConsumer : IConsumer<DbSourceCreated>
             return;
         }
 
+        if (!source.State.IsSetup)
+        {
+            return;
+        }
+
         // 1. Try connect to database
-        var connectOrError = await _postgresConnector.CheckConnection(
+        var successOrError = await _postgresConnector.CheckConnection(
             source.ConnectionString,
             context.CancellationToken);
 
-        if (connectOrError.IsError)
+        if (successOrError.IsError)
         {
-            source.ChangeState(DbSourceState.ConnectionFailed, now);
+            source.SetState(DbSourceState.ConnectionFailed, now);
             await _unitOfWork.SaveChanges(context.CancellationToken);
             return;
         }
@@ -69,12 +75,12 @@ internal sealed class DbSourceCreatedConsumer : IConsumer<DbSourceCreated>
 
             if (schemaOrError.IsError)
             {
-                source.ChangeState(DbSourceState.SchemaNotAvailable, now);
+                source.SetState(DbSourceState.SchemaNotAvailable, now);
                 await _unitOfWork.SaveChanges(context.CancellationToken);
                 return;
             }
 
-            source.UpdateSchema(schemaOrError.Value);
+            source.UpdateOnlySchema(schemaOrError.Value);
         }
 
         // 3. Check schema if need
@@ -83,7 +89,7 @@ internal sealed class DbSourceCreatedConsumer : IConsumer<DbSourceCreated>
             // TODO
         }
 
-        source.ChangeState(DbSourceState.Ready, now);
+        source.SetState(DbSourceState.Ready, now);
         await _unitOfWork.SaveChanges(context.CancellationToken);
     }
 }
