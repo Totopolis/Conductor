@@ -1,33 +1,57 @@
-﻿using Bi.Contracts.CreateDataSource;
+﻿using Bi.Application.Diagnostics;
+using Bi.Contracts.CreateDbSource;
 using Bi.Domain.Abstractions;
 using Bi.Domain.DataSources;
+using Domain.Shared;
 using ErrorOr;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Bi.Application.Handlers;
 
 public sealed class CreateDataSourceHandler : IRequestHandler<
-    CreateDataSourceCommand,
-    ErrorOr<CreateDataSourceCommandResponse>>
+    CreateDbSourceCommand,
+    ErrorOr<CreateDbSourceCommandResponse>>
 {
-    private readonly IDataSourceRepository _dataSourceRepository;
+    private readonly IDbSourceRepository _dataSourceRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly TimeProvider _timeProvider;
+    private readonly ILogger<CreateDataSourceHandler> _logger;
 
     public CreateDataSourceHandler(
-        IDataSourceRepository dataSourceRepository,
-        IUnitOfWork unitOfWork)
+        IDbSourceRepository dataSourceRepository,
+        IUnitOfWork unitOfWork,
+        TimeProvider timeProvider,
+        ILogger<CreateDataSourceHandler> logger)
     {
         _dataSourceRepository = dataSourceRepository;
         _unitOfWork = unitOfWork;
+        _timeProvider = timeProvider;
+        _logger = logger;
     }
 
-    public async Task<ErrorOr<CreateDataSourceCommandResponse>> Handle(
-        CreateDataSourceCommand request,
+    public async Task<ErrorOr<CreateDbSourceCommandResponse>> Handle(
+        CreateDbSourceCommand request,
         CancellationToken cancellationToken)
     {
-        var dataSourceOrError = DataSource.CreateNew(
+        if (!DbSourceSchemaMode.TryFromName(
+            request.SchemaMode.ToString(),
+            ignoreCase: true,
+            out var schemaMode))
+        {
+            _logger.LogError("Bad DbSourceSchemaMode name {0}", request.SchemaMode.ToString());
+            return ApplicationErrors.UnexpectedError;
+        }
+
+        var dataSourceOrError = DbSource.CreateNew(
+            kind: request.Kind,
             name: request.Name,
-            description: request.Description);
+            privateNotes: request.PrivateNotes,
+            description: request.Description,
+            connectionString: request.ConnectionString,
+            schemaMode: schemaMode,
+            schema: request.ManualSchema,
+            now: _timeProvider.GetInstantNow());
 
         if (dataSourceOrError.IsError)
         {
@@ -40,7 +64,7 @@ public sealed class CreateDataSourceHandler : IRequestHandler<
 
         await _unitOfWork.SaveChanges(cancellationToken);
 
-        return new CreateDataSourceCommandResponse(
+        return new CreateDbSourceCommandResponse(
             DataSourceId: dataSource.Id.Value);
     }
 }

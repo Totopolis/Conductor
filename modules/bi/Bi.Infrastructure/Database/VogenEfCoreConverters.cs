@@ -3,5 +3,5 @@ using Vogen;
 
 namespace Bi.Infrastructure.Database;
 
-[EfCoreConverter<DataSourceId>]
+[EfCoreConverter<DbSourceId>]
 internal partial class VogenEfCoreConverters;

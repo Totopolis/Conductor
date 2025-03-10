@@ -33,7 +33,7 @@ public static class ServiceExtensions
         services.AddDbContext<BiDbContext>();
 
         services
-            .AddScoped<IDataSourceRepository, DataSourceRepository>();
+            .AddScoped<IDbSourceRepository, DbSourceRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
