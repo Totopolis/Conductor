@@ -2,7 +2,7 @@
 
 namespace Bi.Domain.DataSources;
 
-public class DbSourceState : SmartEnum<DbSourceKind>
+public class DbSourceState : SmartEnum<DbSourceState>
 {
     public static readonly DbSourceState Disabled = new(nameof(Disabled), 10);
 

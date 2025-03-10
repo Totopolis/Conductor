@@ -1,11 +1,9 @@
-﻿using Bi.Application.Diagnostics;
-using Bi.Contracts.CreateDbSource;
+﻿using Bi.Contracts.CreateDbSource;
 using Bi.Domain.Abstractions;
 using Bi.Domain.DataSources;
 using Domain.Shared;
 using ErrorOr;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Bi.Application.Handlers;
 
