@@ -1,4 +1,5 @@
 ﻿using Bi.Domain.Diagnostics;
+using Bi.Domain.Events;
 using Domain.Shared;
 using ErrorOr;
 using NodaTime;
@@ -88,6 +89,10 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
             state: DbSourceState.Setup,
             stateChanged: now);
 
+        dataSource.RaiseDomainEvent(new DbSourceCreated(
+            Id: id,
+            Name: dataSource.Name));
+
         return dataSource;
     }
 
@@ -123,5 +128,16 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
     public void ChangeDescription(string newDescription)
     {
         Description = newDescription;
+    }
+
+    public void ChangeState(DbSourceState newState, Instant now)
+    {
+        State = newState;
+        StateChanged = now;
+    }
+
+    public void UpdateSchema(string schema)
+    {
+        Schema = schema;
     }
 }
