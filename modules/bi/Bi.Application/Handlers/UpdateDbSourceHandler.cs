@@ -40,7 +40,7 @@ public sealed class UpdateDbSourceHandler : IRequestHandler<
         var source = await _dbSourceRepository.Find(sourceId, cancellationToken);
         if (source is null)
         {
-            return ApplicationErrors.DataSourceNotFound;
+            return ApplicationErrors.DbSourceNotFound;
         }
 
         if (source.State.IsSetup)

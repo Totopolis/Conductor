@@ -8,7 +8,7 @@ public static class ApplicationErrors
         code: "Bi.Application.UnexpectedError",
         description: "Unexpected error, see logs");
 
-    public static readonly Error DataSourceNotFound = Error.NotFound(
+    public static readonly Error DbSourceNotFound = Error.NotFound(
         code: "Bi.Application.DataSourceNotFound",
         description: "DataSourceId not found");
 
@@ -19,4 +19,8 @@ public static class ApplicationErrors
     public static readonly Error DbSourceBusy = Error.Failure(
         code: "Bi.Application.DbSourceBusy",
         description: "DbSource busy now");
+
+    public static readonly Error EnumMappingError = Error.Unexpected(
+        code: "Bi.Application.EnumMappingError",
+        description: "Enum mapping error");
 }
