@@ -23,4 +23,12 @@ public static class ApplicationErrors
     public static readonly Error EnumMappingError = Error.Unexpected(
         code: "Bi.Application.EnumMappingError",
         description: "Enum mapping error");
+
+    public static readonly Error BadConnectionStringFormat = Error.Failure(
+       code: "Bi.Application.BadConnectionStringFormat",
+       description: "Bad сonnection string format");
+
+    public static readonly Error DbSourceConnectionFailed = Error.Failure(
+       code: "Bi.Application.DbSourceConnectionFailed",
+       description: "DbSource connection failed");
 }
