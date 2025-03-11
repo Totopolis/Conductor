@@ -5,13 +5,19 @@ namespace Bi.Infrastructure;
 
 internal sealed class PostgresConnector : IPostgresConnector
 {
-    public Task<ErrorOr<Success>> CheckConnection(string connectionString, CancellationToken ct)
+    public async Task<ErrorOr<Success>> CheckConnection(
+        string connectionString,
+        CancellationToken ct)
     {
-        throw new NotImplementedException();
+        await Task.Delay(100);
+        return Result.Success;
     }
 
-    public Task<ErrorOr<string>> GrabSchema(string connectionString, CancellationToken ct)
+    public async Task<ErrorOr<string>> GrabSchema(
+        string connectionString,
+        CancellationToken ct)
     {
-        throw new NotImplementedException();
+        await Task.Delay(100);
+        return "<NO SCHEMA>";
     }
 }

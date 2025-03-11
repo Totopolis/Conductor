@@ -21,6 +21,7 @@ public sealed class GetDbSourceEndpoint :
     public override void Configure()
     {
         Get("/db-sources/{id}");
+        AllowAnonymous();
 
         Description(x =>
         {

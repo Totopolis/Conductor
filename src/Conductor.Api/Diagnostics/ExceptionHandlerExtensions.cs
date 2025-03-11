@@ -29,7 +29,7 @@ public static class ExceptionHandlerExtensions
         var cancellationToken = ctx.RequestAborted;
 
         var problemInstance = exHandlerFeature.Endpoint?.DisplayName?.Split(" => ")[0] ?? string.Empty;
-        var logger = ctx.Resolve<ILogger>();
+        var logger = ctx.Resolve<ILogger<RootEndpoint>>();
 
         if (exHandlerFeature.Error is ErrorOrException errorOr)
         {

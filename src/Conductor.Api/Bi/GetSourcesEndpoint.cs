@@ -21,6 +21,7 @@ public sealed class GetSourcesEndpoint :
     public override void Configure()
     {
         Get("/sources");
+        AllowAnonymous();
 
         Description(x =>
         {

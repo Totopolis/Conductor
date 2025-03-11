@@ -19,6 +19,7 @@ public sealed class CreateDbSourceEndpoint :
     public override void Configure()
     {
         Post("/datasources");
+        AllowAnonymous();
 
         Description(x =>
         {

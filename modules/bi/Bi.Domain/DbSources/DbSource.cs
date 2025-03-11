@@ -86,10 +86,11 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
             connectionString: connectionString,
             schemaMode: DbSourceSchemaMode.FromName(schemaMode, ignoreCase: true),
             schema: schema,
-            state: DbSourceState.Setup,
+            state: DbSourceState.Disabled,
             stateChanged: now);
 
         dataSource.ChangedAction();
+        dataSource.SetState(DbSourceState.Setup, now);
 
         return dataSource;
     }
