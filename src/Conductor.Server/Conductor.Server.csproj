@@ -1,5 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
+	<PropertyGroup>
+	  <UserSecretsId>fa6fe522-7700-4f00-8519-6eafbcd8141c</UserSecretsId>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 		<PackageReference Include="NodaTime.Serialization.SystemTextJson" />

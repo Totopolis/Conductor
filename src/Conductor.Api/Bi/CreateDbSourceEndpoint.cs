@@ -19,11 +19,9 @@ public sealed class CreateDbSourceEndpoint :
     public override void Configure()
     {
         Post("/datasources");
-        Policies(Constants.AllAuthenticsPolicy);
 
         Description(x =>
         {
-            x.WithTags(Constants.UserTagName);
             x.WithDescription("Create new data source");
         });
     }

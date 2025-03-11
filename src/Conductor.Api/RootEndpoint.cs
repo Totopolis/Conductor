@@ -20,11 +20,6 @@ public sealed class RootEndpoint : EndpointWithoutRequest<RootResponse>
     {
         Get("/");
         AllowAnonymous();
-
-        Description(x =>
-        {
-            x.WithTags(Constants.AnonimTagName);
-        });
     }
 
     public override async Task HandleAsync(CancellationToken ct)

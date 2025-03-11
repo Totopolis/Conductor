@@ -1,4 +1,5 @@
 ﻿using Application.Shared.Settings;
+using Bi.Application;
 using Bi.Infrastructure;
 using Conductor.Api;
 using Conductor.Api.Diagnostics;
@@ -6,12 +7,12 @@ using Conductor.Server.Settings;
 using FastEndpoints;
 using Infrastructure.Shared;
 using MassTransit;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Json;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
 using Scalar.AspNetCore;
 using Server.Shared;
+using System.Diagnostics;
 
 namespace Conductor.Server;
 
@@ -19,10 +20,15 @@ internal static class Boot
 {
     public static void PreBuild(this WebApplicationBuilder builder)
     {
-        builder.Configuration.AddEnvironmentVariables("G_");
-
-        // ATTENTION: Must be first in order.
-        builder.Configuration.MergeServerSettingsFromConsulIfNeedIn<ServerModule>(builder.Configuration);
+        if (!builder.Environment.IsDevelopment() && !Debugger.IsAttached)
+        {
+            builder.Configuration.AddEnvironmentVariables("G_");
+            builder.Configuration.MergeServerSettingsFromConsulIfNeedIn<ServerModule>(builder.Configuration);
+        }
+        else
+        {
+            builder.Configuration.AddUserSecrets<Program>();
+        }
 
         var startupSettings = builder.Configuration.ValidateAndReturnPreBuildSettings<
             StartupSettings,
@@ -73,7 +79,7 @@ internal static class Boot
             .AddSingleton<TimeProvider>(x => TimeProvider.System);
 
         builder.Services
-            // .AddBiApplicationOptions()
+            .AddBiApplicationOptions()
             .AddBiInfrastructureOptions();
 
         builder.Services.AddSettingsWithValidation<
@@ -83,12 +89,15 @@ internal static class Boot
 
         // Services
         builder.Services
-            // .AddMyModuleApplicationServices(builder.Configuration)
+            .AddBiApplicationServices(builder.Configuration)
             .AddBiInfrastructureServices(builder.Configuration);
 
         // Infrastructure shared services: system info & eventBusPublisher
         builder.Services
             .AddSharedInfrastructureServices(builder.Configuration);
+
+        // API
+        builder.Services.AddApiServices(builder.Configuration);
 
         // Masstransit
         builder.Services.AddMasstransitLocal(builder.Configuration);
@@ -102,7 +111,7 @@ internal static class Boot
         {
             x.SetKebabCaseEndpointNameFormatter();
 
-            // x.AddMyModuleApplicationConsumers();
+            x.AddBiApplicationConsumers();
 
             x.UsingInMemory((context, cfg) =>
             {
@@ -135,10 +144,8 @@ internal static class Boot
 
     public static Task PostBuild(this WebApplication app)
     {
-        app.UseAuthentication()
-           .UseAuthorization()
-           .UseFastEndpoints()
-           .UseConductorExceptionHandler();
+        app.UseFastEndpoints();
+        app.UseConductorExceptionHandler();
 
         var startupSettings = app.Configuration.ValidateAndReturnPreBuildSettings<
             StartupSettings,
@@ -151,9 +158,6 @@ internal static class Boot
 
             app.MapScalarApiReference(options =>
             {
-                options
-                    .WithPreferredScheme(JwtBearerDefaults.AuthenticationScheme);
-
                 if (string.IsNullOrWhiteSpace(startupSettings.Scalar.Server))
                 {
                     options.Servers = [];

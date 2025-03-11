@@ -21,11 +21,9 @@ public sealed class GetDbSourceEndpoint :
     public override void Configure()
     {
         Get("/db-sources/{id}");
-        Policies(Constants.AllAuthenticsPolicy);
 
         Description(x =>
         {
-            x.WithTags(Constants.UserTagName);
             x.WithDescription("Get database source details");
         });
     }

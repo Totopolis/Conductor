@@ -1,6 +1,7 @@
 ﻿using Application.Shared;
 using Application.Shared.Settings;
 using Bi.Application;
+using Bi.Application.Abstractions;
 using Bi.Domain.Abstractions;
 using Bi.Infrastructure.Database;
 using Bi.Infrastructure.Repositories;
@@ -36,6 +37,8 @@ public static class ServiceExtensions
             .AddScoped<IDbSourceRepository, DbSourceRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        services.AddTransient<IPostgresConnector, PostgresConnector>();
 
         return services;
     }

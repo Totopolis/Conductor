@@ -21,11 +21,9 @@ public sealed class GetSourcesEndpoint :
     public override void Configure()
     {
         Get("/sources");
-        Policies(Constants.AllAuthenticsPolicy);
 
         Description(x =>
         {
-            x.WithTags(Constants.UserTagName);
             x.WithDescription("Fetch sources");
         });
     }
