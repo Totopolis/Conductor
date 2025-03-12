@@ -158,28 +158,32 @@ public sealed class Source : AggregateRoot<SourceId>
         }
     }
 
-    private void InternalLock(Instant now)
+    private ErrorOr<Success> TryLock(Instant now)
     {
-        if (!State.IsLock)
-        {
-            State = SourceState.Lock;
-            StateChanged = now;
-
-            RaiseDomainEvent(new SourceStateChanged(
-                Id: Id,
-                Name: Name,
-                State: SourceState.Lock));
-        }
-    }
-
-    public ErrorOr<Success> LockAndGrabSchema(Instant now)
-    {
+        // TODO: use timeouted lock to avoid deads
         if (State.IsLock)
         {
             return DomainErrors.SourceBusy;
         }
 
-        InternalLock(now);
+        State = SourceState.Lock;
+        StateChanged = now;
+
+        RaiseDomainEvent(new SourceStateChanged(
+            Id: Id,
+            Name: Name,
+            State: SourceState.Lock));
+
+        return Result.Success;
+    }
+
+    public ErrorOr<Success> LockAndGrabSchema(Instant now)
+    {
+        var successOrError = TryLock(now);
+        if (successOrError.IsError)
+        {
+            return successOrError;
+        }
 
         RaiseDomainEvent(new GrabSchema(
                 Id: Id,
@@ -190,12 +194,11 @@ public sealed class Source : AggregateRoot<SourceId>
 
     public ErrorOr<Success> LockAndReactivate(Instant now)
     {
-        if (State.IsLock)
+        var successOrError = TryLock(now);
+        if (successOrError.IsError)
         {
-            return DomainErrors.SourceBusy;
+            return successOrError;
         }
-
-        InternalLock(now);
 
         RaiseDomainEvent(new ReactivateSource(
                 Id: Id,
@@ -212,11 +215,6 @@ public sealed class Source : AggregateRoot<SourceId>
         string schema,
         Instant now)
     {
-        if (State.IsLock)
-        {
-            return DomainErrors.SourceBusy;
-        }
-
         var errors = ValidateFields(
             kind: Kind.Name,
             name: name,
@@ -231,7 +229,11 @@ public sealed class Source : AggregateRoot<SourceId>
             return errors;
         }
 
-        InternalLock(now);
+        var successOrError = TryLock(now);
+        if (successOrError.IsError)
+        {
+            return successOrError;
+        }
 
         RaiseDomainEvent(new UpdateSource(
             Id: Id,
