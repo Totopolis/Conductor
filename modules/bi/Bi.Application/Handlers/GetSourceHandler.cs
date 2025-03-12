@@ -42,10 +42,11 @@ public sealed class GetSourceHandler : IRequestHandler<
         return new GetSourceQueryResult(
             SourceId: source.Id.Value,
             Name: source.Name,
-            PrivateNotes: source.UserNotes,
+            UserNotes: source.UserNotes,
             Description: source.Description,
             ConnectionString: source.ConnectionString,
             Schema: source.Schema,
+            AiNotes: source.AiNotes,
             State: state,
             StateChanged: source.StateChanged);
     }

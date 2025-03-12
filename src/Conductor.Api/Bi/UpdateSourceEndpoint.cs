@@ -2,57 +2,54 @@
 using FastEndpoints;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using static Conductor.Api.Bi.CreateSourceEndpoint;
+using static Conductor.Api.Bi.UpdateSourceEndpoint;
 
 namespace Conductor.Api.Bi;
 
-public sealed class CreateSourceEndpoint :
-    Endpoint<CreateSourceRequest, CreateSourceResponse>
+public sealed class UpdateSourceEndpoint :
+    Endpoint<UpdateSourceRequest>
 {
     private readonly IMediator _mediator;
 
-    public CreateSourceEndpoint(IMediator mediator)
+    public UpdateSourceEndpoint(IMediator mediator)
     {
         _mediator = mediator;
     }
 
     public override void Configure()
     {
-        Post("/sources");
+        Put("/sources/{id}");
         AllowAnonymous();
 
         Description(x =>
         {
-            x.WithDescription("Create new data source");
+            x.WithDescription("Update data source");
         });
     }
 
     public override async Task HandleAsync(
-        CreateSourceRequest req,
+        UpdateSourceRequest req,
         CancellationToken ct)
     {
-        var command = new CreateSourceCommand(
-            Kind: req.Kind,
+        var id = Route<Guid>("id");
+
+        var command = new UpdateSourceCommand(
+            SourceId: id,
             Name: req.Name,
             UserNotes: req.UserNotes,
             Description: req.Description,
             ConnectionString: req.ConnectionString,
             Schema: req.Schema);
 
-        var responseOrError = await _mediator.Send(command, ct);
-        var response = responseOrError.ValueOrThrow();
-
-        await SendAsync(
-            new CreateSourceResponse(SourceId: response.SourceId));
+        var successOrError = await _mediator.Send(command, ct);
+        _ = successOrError.ValueOrThrow();
     }
 
-    public record CreateSourceRequest(
-        string Kind,
+    public record UpdateSourceRequest(
         string Name,
+        string Kind,
         string UserNotes,
         string Description,
         string ConnectionString,
         string Schema);
-
-    public record CreateSourceResponse(Guid SourceId);
 }

@@ -39,10 +39,11 @@ public sealed class GetSourceEndpoint :
         await SendAsync(new EndpointResponse(
             SourceId: response.SourceId,
             Name: response.Name,
-            PrivateNotes: response.PrivateNotes,
+            UserNotes: response.UserNotes,
             Description: response.Description,
             ConnectionString: response.ConnectionString,
             Schema: response.Schema,
+            AiNotes: response.AiNotes,
             State: response.State,
             StateChanged: response.StateChanged));
     }
@@ -50,10 +51,11 @@ public sealed class GetSourceEndpoint :
     public sealed record EndpointResponse(
         Guid SourceId,
         string Name,
-        string PrivateNotes,
+        string UserNotes,
         string Description,
         string ConnectionString,
         string Schema,
+        string AiNotes,
         SourceState State,
         Instant StateChanged);
 }

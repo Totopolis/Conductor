@@ -6,9 +6,10 @@ namespace Bi.Contracts.GetSource;
 public sealed record GetSourceQueryResult(
     Guid SourceId,
     string Name,
-    string PrivateNotes,
+    string UserNotes,
     string Description,
     string ConnectionString,
     string Schema,
+    string AiNotes,
     SourceState State,
     Instant StateChanged);

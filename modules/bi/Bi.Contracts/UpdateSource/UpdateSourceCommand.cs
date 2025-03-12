@@ -6,7 +6,7 @@ namespace Bi.Contracts.CreateSource;
 public sealed record UpdateSourceCommand(
     Guid SourceId,
     string Name,
-    string PrivateNotes,
+    string UserNotes,
     string Description,
     string ConnectionString,
     string Schema) : IRequest<ErrorOr<Success>>;

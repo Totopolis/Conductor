@@ -35,7 +35,7 @@ public sealed class Source : AggregateRoot<SourceId>
 
     public string Name { get; private set; }
 
-    // This field is not passed to the LLM and Not initiate setup.
+    // This field is not passed to the LLM.
     public string UserNotes { get; private set; }
 
     public string Description { get; private set; }
@@ -55,7 +55,7 @@ public sealed class Source : AggregateRoot<SourceId>
     public static ErrorOr<Source> CreateNew(
         string kind,
         string name,
-        string privateNotes,
+        string userNotes,
         string description,
         string connectionString,
         string schema,
@@ -64,7 +64,7 @@ public sealed class Source : AggregateRoot<SourceId>
         var errors = ValidateFields(
             kind,
             name,
-            privateNotes,
+            userNotes,
             description,
             connectionString,
             schema,
@@ -80,16 +80,15 @@ public sealed class Source : AggregateRoot<SourceId>
             id,
             kind: SourceKind.FromName(kind, ignoreCase: true),
             name: name,
-            userNotes: privateNotes,
+            userNotes: userNotes,
             description: description,
             connectionString: connectionString,
             schema: schema,
             aiNotes: string.Empty,
-            state: SourceState.Disabled,
+            state: SourceState.Inactive,
             stateChanged: now);
 
         dataSource.ChangedAction();
-        dataSource.SetState(SourceState.Setup, now);
 
         return dataSource;
     }
@@ -97,7 +96,7 @@ public sealed class Source : AggregateRoot<SourceId>
     public static IEnumerable<Error> ValidateFields(
         string kind,
         string name,
-        string privateNotes,
+        string userNotes,
         string description,
         string connectionString,
         string schema,
@@ -122,22 +121,6 @@ public sealed class Source : AggregateRoot<SourceId>
         }
     }
 
-    public void SetState(SourceState newState, Instant now)
-    {
-        if (newState != State)
-        {
-            State = newState;
-            StateChanged = now;
-        }
-
-        if (newState.IsSetup)
-        {
-            RaiseDomainEvent(new NeedSetupSource(
-                Id: Id,
-                Name: Name));
-        }
-    }
-
     public void UpdateOnlySchema(string schema)
     {
         if (schema != Schema)
@@ -147,18 +130,97 @@ public sealed class Source : AggregateRoot<SourceId>
         }
     }
 
-    public ErrorOr<Success> RaiseNeedUpdateEventOrError(
+    public void Disable(Instant now)
+    {
+        if (!State.IsInactive)
+        {
+            State = SourceState.Inactive;
+            StateChanged = now;
+
+            RaiseDomainEvent(new SourceStateChanhed(
+                Id: Id,
+                Name: Name,
+                State: SourceState.Inactive));
+        }
+    }
+
+    public void Enable(Instant now)
+    {
+        if (!State.IsReady)
+        {
+            State = SourceState.Ready;
+            StateChanged = now;
+
+            RaiseDomainEvent(new SourceStateChanhed(
+                Id: Id,
+                Name: Name,
+                State: SourceState.Ready));
+        }
+    }
+
+    private void InternalLock(Instant now)
+    {
+        if (!State.IsLock)
+        {
+            State = SourceState.Lock;
+            StateChanged = now;
+
+            RaiseDomainEvent(new SourceStateChanhed(
+                Id: Id,
+                Name: Name,
+                State: SourceState.Lock));
+        }
+    }
+
+    public ErrorOr<Success> LockAndGrabSchema(Instant now)
+    {
+        if (State.IsLock)
+        {
+            return DomainErrors.SourceBusy;
+        }
+
+        InternalLock(now);
+
+        RaiseDomainEvent(new GrabSchema(
+                Id: Id,
+                Name: Name));
+
+        return Result.Success;
+    }
+
+    public ErrorOr<Success> LockAndReactivate(Instant now)
+    {
+        if (State.IsLock)
+        {
+            return DomainErrors.SourceBusy;
+        }
+
+        InternalLock(now);
+
+        RaiseDomainEvent(new ReactivateSource(
+                Id: Id,
+                Name: Name));
+
+        return Result.Success;
+    }
+
+    public ErrorOr<Success> LockAndUpdate(
         string name,
-        string privateNotes,
+        string userNotes,
         string description,
         string connectionString,
         string schema,
         Instant now)
     {
+        if (State.IsLock)
+        {
+            return DomainErrors.SourceBusy;
+        }
+
         var errors = ValidateFields(
             kind: Kind.Name,
             name: name,
-            privateNotes: privateNotes,
+            userNotes: userNotes,
             description: description,
             connectionString: connectionString,
             schema: schema,
@@ -169,10 +231,12 @@ public sealed class Source : AggregateRoot<SourceId>
             return errors;
         }
 
-        RaiseDomainEvent(new NeedUpdateSource(
+        InternalLock(now);
+
+        RaiseDomainEvent(new UpdateSource(
             Id: Id,
             Name: name,
-            PrivateNotes: privateNotes,
+            UserNotes: userNotes,
             Description: description,
             ConnectionString: connectionString,
             Schema: schema));
@@ -180,9 +244,10 @@ public sealed class Source : AggregateRoot<SourceId>
         return Result.Success;
     }
 
+    // TODO: incapsulate?
     public void UpdateDefinition(
         string name,
-        string privateNotes,
+        string userNotes,
         string description,
         string connectionString,
         string schema)
@@ -195,9 +260,9 @@ public sealed class Source : AggregateRoot<SourceId>
             changes = true;
         }
 
-        if (privateNotes != UserNotes)
+        if (userNotes != UserNotes)
         {
-            UserNotes = privateNotes;
+            UserNotes = userNotes;
             changes = true;
         }
 

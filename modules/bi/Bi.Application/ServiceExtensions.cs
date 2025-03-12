@@ -40,12 +40,12 @@ public static class ServiceExtensions
         var partitioner = new Partitioner(2, new Murmur3UnsafeHashGenerator());
 
         cfg.AddPartitionedConsumer<
-            NeedSetupConsumer,
-            NeedSetupSource>(partitioner);
+            ReactivateSourceConsumer,
+            ReactivateSource>(partitioner);
 
         cfg.AddPartitionedConsumer<
-            NeedUpdateConsumer,
-            NeedUpdateSource>(partitioner);
+            UpdateSourceConsumer,
+            UpdateSource>(partitioner);
     }
 
     private static void AddPartitionedConsumer<TCONSUMER, TMESSAGE>(

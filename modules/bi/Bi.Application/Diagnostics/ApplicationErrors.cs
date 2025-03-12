@@ -16,10 +16,6 @@ public static class ApplicationErrors
         code: "Bi.Application.BadIdFormat",
         description: "Bad Id format");
 
-    public static readonly Error SourceBusy = Error.Failure(
-        code: "Bi.Application.SourceBusy",
-        description: "Source busy now");
-
     public static readonly Error EnumMappingError = Error.Unexpected(
         code: "Bi.Application.EnumMappingError",
         description: "Enum mapping error");

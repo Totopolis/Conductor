@@ -19,4 +19,8 @@ public static class DomainErrors
     public static readonly Error UnexpectedError = Error.Unexpected(
         code: "Bi.Domain.UnexpectedError",
         description: "Unexpected error, see logs");
+
+    public static readonly Error SourceBusy = Error.Failure(
+        code: "Bi.Domain.SourceBusy",
+        description: "Source busy now");
 }

@@ -7,20 +7,20 @@ using MediatR;
 
 namespace Bi.Application.Handlers;
 
-public sealed class CreateDataSourceHandler : IRequestHandler<
+public sealed class CreateSourceHandler : IRequestHandler<
     CreateSourceCommand,
     ErrorOr<CreateSourceCommandResponse>>
 {
-    private readonly ISourceRepository _dataSourceRepository;
+    private readonly ISourceRepository _sourceRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
 
-    public CreateDataSourceHandler(
-        ISourceRepository dataSourceRepository,
+    public CreateSourceHandler(
+        ISourceRepository sourceRepository,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider)
     {
-        _dataSourceRepository = dataSourceRepository;
+        _sourceRepository = sourceRepository;
         _unitOfWork = unitOfWork;
         _timeProvider = timeProvider;
     }
@@ -29,27 +29,27 @@ public sealed class CreateDataSourceHandler : IRequestHandler<
         CreateSourceCommand request,
         CancellationToken cancellationToken)
     {
-        var dataSourceOrError = Source.CreateNew(
+        var sourceOrError = Source.CreateNew(
             kind: request.Kind,
             name: request.Name,
-            privateNotes: request.PrivateNotes,
+            userNotes: request.UserNotes,
             description: request.Description,
             connectionString: request.ConnectionString,
             schema: request.Schema,
             now: _timeProvider.GetInstantNow());
 
-        if (dataSourceOrError.IsError)
+        if (sourceOrError.IsError)
         {
-            return dataSourceOrError.FirstError;
+            return sourceOrError.FirstError;
         }
 
-        var dataSource = dataSourceOrError.Value;
+        var source = sourceOrError.Value;
 
-        _dataSourceRepository.Add(dataSource);
+        _sourceRepository.Add(source);
 
         await _unitOfWork.SaveChanges(cancellationToken);
 
         return new CreateSourceCommandResponse(
-            SourceId: dataSource.Id.Value);
+            SourceId: source.Id.Value);
     }
 }

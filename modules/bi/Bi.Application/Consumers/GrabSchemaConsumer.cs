@@ -8,21 +8,21 @@ using Microsoft.Extensions.Logging;
 
 namespace Bi.Application.Consumers;
 
-internal sealed class NeedSetupConsumer :
-    IConsumer<NeedSetupSource>
+internal sealed class GrabSchemaConsumer :
+    IConsumer<GrabSchema>
 {
     private readonly ISourceRepository _sourceRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
     private readonly IPostgresConnector _postgresConnector;
-    private readonly ILogger<NeedSetupConsumer> _logger;
+    private readonly ILogger<GrabSchemaConsumer> _logger;
 
-    public NeedSetupConsumer(
+    public GrabSchemaConsumer(
         ISourceRepository sourceRepository,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider,
         IPostgresConnector postgresConnector,
-        ILogger<NeedSetupConsumer> logger)
+        ILogger<GrabSchemaConsumer> logger)
     {
         _sourceRepository = sourceRepository;
         _unitOfWork = unitOfWork;
@@ -32,7 +32,7 @@ internal sealed class NeedSetupConsumer :
     }
 
     // TODO: use polly retry policies
-    public async Task Consume(ConsumeContext<NeedSetupSource> context)
+    public async Task Consume(ConsumeContext<GrabSchema> context)
     {
         var now = _timeProvider.GetInstantNow();
         var msg = context.Message;
@@ -49,26 +49,20 @@ internal sealed class NeedSetupConsumer :
             return;
         }
 
-        if (!source.State.IsSetup)
-        {
-            return;
-        }
-
-        // 1. Try connect to database
-        var successOrError = await _postgresConnector.CheckConnection(
+        var schemaOrError = await _postgresConnector.GrabSchema(
             source.ConnectionString,
             context.CancellationToken);
 
-        if (successOrError.IsError)
+        if (schemaOrError.IsError)
         {
-            source.SetState(SourceState.Failed, now);
+            source.Disable(now);
             await _unitOfWork.SaveChanges(context.CancellationToken);
             return;
         }
 
-        // 2. Check schema if need
-        // 3. Ask ai about source config
-        source.SetState(SourceState.Ready, now);
+        source.UpdateOnlySchema(schemaOrError.Value);
+        source.Disable(now);
+
         await _unitOfWork.SaveChanges(context.CancellationToken);
     }
 }

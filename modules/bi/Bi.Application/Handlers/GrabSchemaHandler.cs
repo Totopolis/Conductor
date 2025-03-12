@@ -1,7 +1,6 @@
 ﻿using Bi.Application.Diagnostics;
-using Bi.Contracts.CreateSource;
+using Bi.Contracts.GrabSchema;
 using Bi.Domain.Abstractions;
-using Bi.Domain.Diagnostics;
 using Bi.Domain.Sources;
 using Domain.Shared;
 using ErrorOr;
@@ -9,15 +8,15 @@ using MediatR;
 
 namespace Bi.Application.Handlers;
 
-public sealed class UpdateSourceHandler : IRequestHandler<
-    UpdateSourceCommand,
+public sealed class GrabSchemaHandler : IRequestHandler<
+    GrabSchemaCommand,
     ErrorOr<Success>>
 {
     private readonly ISourceRepository _sourceRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
 
-    public UpdateSourceHandler(
+    public GrabSchemaHandler(
         ISourceRepository sourceRepository,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider)
@@ -28,11 +27,9 @@ public sealed class UpdateSourceHandler : IRequestHandler<
     }
 
     public async Task<ErrorOr<Success>> Handle(
-        UpdateSourceCommand request,
+        GrabSchemaCommand request,
         CancellationToken cancellationToken)
     {
-        var now = _timeProvider.GetInstantNow();
-
         if (!SourceId.TryFrom(request.SourceId, out var sourceId))
         {
             return ApplicationErrors.BadIdFormat;
@@ -44,14 +41,7 @@ public sealed class UpdateSourceHandler : IRequestHandler<
             return ApplicationErrors.SourceNotFound;
         }
 
-        var successOrError = source.LockAndUpdate(
-            name: request.Name,
-            userNotes: request.UserNotes,
-            description: request.Description,
-            connectionString: request.ConnectionString,
-            schema: request.Schema,
-            now: now);
-        
+        var successOrError = source.LockAndGrabSchema(_timeProvider.GetInstantNow());
         if (successOrError.IsError)
         {
             return successOrError;
