@@ -1,7 +1,7 @@
-﻿using Bi.Domain.DataSources;
+﻿using Bi.Domain.Sources;
 using Vogen;
 
 namespace Bi.Infrastructure.Database;
 
-[EfCoreConverter<DbSourceId>]
+[EfCoreConverter<SourceId>]
 internal partial class VogenEfCoreConverters;

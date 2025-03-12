@@ -1,6 +1,6 @@
-﻿using Bi.Contracts.CreateDbSource;
+﻿using Bi.Contracts.CreateSource;
 using Bi.Domain.Abstractions;
-using Bi.Domain.DataSources;
+using Bi.Domain.Sources;
 using Domain.Shared;
 using ErrorOr;
 using MediatR;
@@ -8,15 +8,15 @@ using MediatR;
 namespace Bi.Application.Handlers;
 
 public sealed class CreateDataSourceHandler : IRequestHandler<
-    CreateDbSourceCommand,
-    ErrorOr<CreateDbSourceCommandResponse>>
+    CreateSourceCommand,
+    ErrorOr<CreateSourceCommandResponse>>
 {
-    private readonly IDbSourceRepository _dataSourceRepository;
+    private readonly ISourceRepository _dataSourceRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
 
     public CreateDataSourceHandler(
-        IDbSourceRepository dataSourceRepository,
+        ISourceRepository dataSourceRepository,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider)
     {
@@ -25,18 +25,17 @@ public sealed class CreateDataSourceHandler : IRequestHandler<
         _timeProvider = timeProvider;
     }
 
-    public async Task<ErrorOr<CreateDbSourceCommandResponse>> Handle(
-        CreateDbSourceCommand request,
+    public async Task<ErrorOr<CreateSourceCommandResponse>> Handle(
+        CreateSourceCommand request,
         CancellationToken cancellationToken)
     {
-        var dataSourceOrError = DbSource.CreateNew(
+        var dataSourceOrError = Source.CreateNew(
             kind: request.Kind,
             name: request.Name,
             privateNotes: request.PrivateNotes,
             description: request.Description,
             connectionString: request.ConnectionString,
-            schemaMode: request.SchemaMode.ToString(),
-            schema: request.ManualSchema,
+            schema: request.Schema,
             now: _timeProvider.GetInstantNow());
 
         if (dataSourceOrError.IsError)
@@ -50,7 +49,7 @@ public sealed class CreateDataSourceHandler : IRequestHandler<
 
         await _unitOfWork.SaveChanges(cancellationToken);
 
-        return new CreateDbSourceCommandResponse(
-            DataSourceId: dataSource.Id.Value);
+        return new CreateSourceCommandResponse(
+            SourceId: dataSource.Id.Value);
     }
 }

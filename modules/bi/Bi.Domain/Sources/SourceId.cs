@@ -1,20 +1,20 @@
 ﻿using Vogen;
 
-namespace Bi.Domain.DataSources;
+namespace Bi.Domain.Sources;
 
 [ValueObject<Guid>]
-public partial struct DbSourceId
+public partial struct SourceId
 {
     private static Validation Validate(Guid value)
     {
         if (value == Guid.Empty)
         {
-            return Validation.Invalid("DbSourceId can not be empty");
+            return Validation.Invalid("SourceId can not be empty");
         }
 
         if (value.Version != 7)
         {
-            return Validation.Invalid("DbSourceId must be 7 version");
+            return Validation.Invalid("SourceId must be 7 version");
         }
 
         return Validation.Ok;

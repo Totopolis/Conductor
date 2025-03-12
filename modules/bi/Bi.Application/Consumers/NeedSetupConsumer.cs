@@ -1,7 +1,7 @@
 ﻿using Bi.Application.Abstractions;
 using Bi.Domain.Abstractions;
-using Bi.Domain.DataSources;
 using Bi.Domain.Events;
+using Bi.Domain.Sources;
 using Domain.Shared;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -9,22 +9,22 @@ using Microsoft.Extensions.Logging;
 namespace Bi.Application.Consumers;
 
 internal sealed class NeedSetupConsumer :
-    IConsumer<NeedSetupDbSource>
+    IConsumer<NeedSetupSource>
 {
-    private readonly IDbSourceRepository _dbSourceRepository;
+    private readonly ISourceRepository _sourceRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
     private readonly IPostgresConnector _postgresConnector;
     private readonly ILogger<NeedSetupConsumer> _logger;
 
     public NeedSetupConsumer(
-        IDbSourceRepository dbSourceRepository,
+        ISourceRepository sourceRepository,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider,
         IPostgresConnector postgresConnector,
         ILogger<NeedSetupConsumer> logger)
     {
-        _dbSourceRepository = dbSourceRepository;
+        _sourceRepository = sourceRepository;
         _unitOfWork = unitOfWork;
         _timeProvider = timeProvider;
         _postgresConnector = postgresConnector;
@@ -32,20 +32,20 @@ internal sealed class NeedSetupConsumer :
     }
 
     // TODO: use polly retry policies
-    public async Task Consume(ConsumeContext<NeedSetupDbSource> context)
+    public async Task Consume(ConsumeContext<NeedSetupSource> context)
     {
         var now = _timeProvider.GetInstantNow();
         var msg = context.Message;
-        var source = await _dbSourceRepository.Find(msg.Id, context.CancellationToken);
+        var source = await _sourceRepository.Find(msg.Id, context.CancellationToken);
         if (source is null)
         {
-            _logger.LogError("DbSource id={0} not found", msg.Id);
+            _logger.LogError("Source id={0} not found", msg.Id);
             return;
         }
 
-        if (source.Kind != DbSourceKind.Postgres)
+        if (source.Kind != SourceKind.Postgres)
         {
-            _logger.LogError("DbSource kind={0} not supported", source.Kind.Name);
+            _logger.LogError("Source kind={0} not supported", source.Kind.Name);
             return;
         }
 
@@ -61,35 +61,14 @@ internal sealed class NeedSetupConsumer :
 
         if (successOrError.IsError)
         {
-            source.SetState(DbSourceState.ConnectionFailed, now);
+            source.SetState(SourceState.Failed, now);
             await _unitOfWork.SaveChanges(context.CancellationToken);
             return;
         }
 
-        // 2. Try download schema if need
-        if (source.SchemaMode.IsAuto)
-        {
-            var schemaOrError = await _postgresConnector.GrabSchema(
-                source.ConnectionString,
-                context.CancellationToken);
-
-            if (schemaOrError.IsError)
-            {
-                source.SetState(DbSourceState.SchemaNotAvailable, now);
-                await _unitOfWork.SaveChanges(context.CancellationToken);
-                return;
-            }
-
-            source.UpdateOnlySchema(schemaOrError.Value);
-        }
-
-        // 3. Check schema if need
-        if (source.SchemaMode.IsManual)
-        {
-            // TODO
-        }
-
-        source.SetState(DbSourceState.Ready, now);
+        // 2. Check schema if need
+        // 3. Ask ai about source config
+        source.SetState(SourceState.Ready, now);
         await _unitOfWork.SaveChanges(context.CancellationToken);
     }
 }

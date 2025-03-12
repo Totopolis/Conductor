@@ -4,60 +4,60 @@ using Domain.Shared;
 using ErrorOr;
 using NodaTime;
 
-namespace Bi.Domain.DataSources;
+namespace Bi.Domain.Sources;
 
-public sealed class DbSource : AggregateRoot<DbSourceId>
+public sealed class Source : AggregateRoot<SourceId>
 {
-    private DbSource(
-        DbSourceId id,
-        DbSourceKind kind,
+    private Source(
+        SourceId id,
+        SourceKind kind,
         string name,
-        string privateNotes,
+        string userNotes,
         string description,
         string connectionString,
-        DbSourceSchemaMode schemaMode,
         string schema,
-        DbSourceState state,
+        string aiNotes,
+        SourceState state,
         Instant stateChanged) : base(id)
     {
         Kind = kind;
         Name = name;
-        PrivateNotes = privateNotes;
+        UserNotes = userNotes;
         Description = description;
         ConnectionString = connectionString;
-        SchemaMode = schemaMode;
         Schema = schema;
+        AiNotes = aiNotes;
         State = state;
         StateChanged = stateChanged;
     }
 
-    public DbSourceKind Kind { get; init; }
+    public SourceKind Kind { get; init; }
 
     public string Name { get; private set; }
 
     // This field is not passed to the LLM and Not initiate setup.
-    public string PrivateNotes { get; private set; }
+    public string UserNotes { get; private set; }
 
     public string Description { get; private set; }
 
     // This field is not passed to the LLM.
     public string ConnectionString { get; private set; }
 
-    public DbSourceSchemaMode SchemaMode { get; private set; }
-
     public string Schema { get; private set; }
 
-    public DbSourceState State { get; private set; }
+    // This filed received from LLM and user-readonly.
+    public string AiNotes { get; private set; }
+
+    public SourceState State { get; private set; }
 
     public Instant StateChanged { get; private set; }
 
-    public static ErrorOr<DbSource> CreateNew(
+    public static ErrorOr<Source> CreateNew(
         string kind,
         string name,
         string privateNotes,
         string description,
         string connectionString,
-        string schemaMode,
         string schema,
         Instant now)
     {
@@ -67,7 +67,6 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
             privateNotes,
             description,
             connectionString,
-            schemaMode,
             schema,
             now).ToList();
 
@@ -76,21 +75,21 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
             return errors;
         }
 
-        var id = DbSourceId.From(Guid.CreateVersion7());
-        var dataSource = new DbSource(
+        var id = SourceId.From(Guid.CreateVersion7());
+        var dataSource = new Source(
             id,
-            kind: DbSourceKind.FromName(kind, ignoreCase: true),
+            kind: SourceKind.FromName(kind, ignoreCase: true),
             name: name,
-            privateNotes: privateNotes,
+            userNotes: privateNotes,
             description: description,
             connectionString: connectionString,
-            schemaMode: DbSourceSchemaMode.FromName(schemaMode, ignoreCase: true),
             schema: schema,
-            state: DbSourceState.Disabled,
+            aiNotes: string.Empty,
+            state: SourceState.Disabled,
             stateChanged: now);
 
         dataSource.ChangedAction();
-        dataSource.SetState(DbSourceState.Setup, now);
+        dataSource.SetState(SourceState.Setup, now);
 
         return dataSource;
     }
@@ -101,15 +100,9 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
         string privateNotes,
         string description,
         string connectionString,
-        string schemaMode,
         string schema,
         Instant now)
     {
-        if (!DbSourceSchemaMode.TryFromName(schemaMode, ignoreCase: true, out _))
-        {
-            yield return DomainErrors.UnknownSchemaMode;
-        }
-
         if (string.IsNullOrWhiteSpace(name) || name.Length < 3)
         {
             yield return DomainErrors.BadNameFormat;
@@ -123,13 +116,13 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
             yield return DomainErrors.BadDateTimeValue;
         }
 
-        if (!DbSourceKind.TryFromName(kind, ignoreCase: true, out _))
+        if (!SourceKind.TryFromName(kind, ignoreCase: true, out _))
         {
-            yield return DomainErrors.UnknownDbSourceKind;
+            yield return DomainErrors.UnknownSourceKind;
         }
     }
 
-    public void SetState(DbSourceState newState, Instant now)
+    public void SetState(SourceState newState, Instant now)
     {
         if (newState != State)
         {
@@ -139,7 +132,7 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
 
         if (newState.IsSetup)
         {
-            RaiseDomainEvent(new NeedSetupDbSource(
+            RaiseDomainEvent(new NeedSetupSource(
                 Id: Id,
                 Name: Name));
         }
@@ -159,7 +152,6 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
         string privateNotes,
         string description,
         string connectionString,
-        string schemaMode,
         string schema,
         Instant now)
     {
@@ -169,7 +161,6 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
             privateNotes: privateNotes,
             description: description,
             connectionString: connectionString,
-            schemaMode: schemaMode,
             schema: schema,
             now: now).ToList();
 
@@ -178,14 +169,13 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
             return errors;
         }
 
-        RaiseDomainEvent(new NeedUpdateDbSource(
+        RaiseDomainEvent(new NeedUpdateSource(
             Id: Id,
             Name: name,
             PrivateNotes: privateNotes,
             Description: description,
             ConnectionString: connectionString,
-            SchemaMode: DbSourceSchemaMode.FromName(schemaMode, ignoreCase: true),
-            ManualSchema: schema));
+            Schema: schema));
 
         return Result.Success;
     }
@@ -195,7 +185,6 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
         string privateNotes,
         string description,
         string connectionString,
-        DbSourceSchemaMode schemaMode,
         string schema)
     {
         bool changes = false;
@@ -206,9 +195,9 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
             changes = true;
         }
 
-        if (privateNotes != PrivateNotes)
+        if (privateNotes != UserNotes)
         {
-            PrivateNotes = privateNotes;
+            UserNotes = privateNotes;
             changes = true;
         }
 
@@ -221,12 +210,6 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
         if (connectionString != ConnectionString)
         {
             ConnectionString = connectionString;
-            changes = true;
-        }
-
-        if (schemaMode != SchemaMode)
-        {
-            SchemaMode = schemaMode;
             changes = true;
         }
 
@@ -245,12 +228,12 @@ public sealed class DbSource : AggregateRoot<DbSourceId>
     private void ChangedAction()
     {
         var notChanges = GetDomainEvents()
-            .Where(x => x is not DbSourceChanged)
+            .Where(x => x is not SourceChanged)
             .ToList();
 
         ClearDomainEvents();
 
-        notChanges.Add(new DbSourceChanged(Id: Id, Name: Name));
+        notChanges.Add(new SourceChanged(Id: Id, Name: Name));
 
         // Reraise merged changes
         foreach (var it in notChanges)

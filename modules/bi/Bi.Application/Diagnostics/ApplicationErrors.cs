@@ -8,7 +8,7 @@ public static class ApplicationErrors
         code: "Bi.Application.UnexpectedError",
         description: "Unexpected error, see logs");
 
-    public static readonly Error DbSourceNotFound = Error.NotFound(
+    public static readonly Error SourceNotFound = Error.NotFound(
         code: "Bi.Application.DataSourceNotFound",
         description: "DataSourceId not found");
 
@@ -16,9 +16,9 @@ public static class ApplicationErrors
         code: "Bi.Application.BadIdFormat",
         description: "Bad Id format");
 
-    public static readonly Error DbSourceBusy = Error.Failure(
-        code: "Bi.Application.DbSourceBusy",
-        description: "DbSource busy now");
+    public static readonly Error SourceBusy = Error.Failure(
+        code: "Bi.Application.SourceBusy",
+        description: "Source busy now");
 
     public static readonly Error EnumMappingError = Error.Unexpected(
         code: "Bi.Application.EnumMappingError",
@@ -28,7 +28,7 @@ public static class ApplicationErrors
        code: "Bi.Application.BadConnectionStringFormat",
        description: "Bad сonnection string format");
 
-    public static readonly Error DbSourceConnectionFailed = Error.Failure(
-       code: "Bi.Application.DbSourceConnectionFailed",
-       description: "DbSource connection failed");
+    public static readonly Error SourceConnectionFailed = Error.Failure(
+       code: "Bi.Application.SourceConnectionFailed",
+       description: "Source connection failed");
 }

@@ -1,7 +1,7 @@
 ﻿using ErrorOr;
 using MediatR;
 
-namespace Bi.Contracts.CreateDbSource;
+namespace Bi.Contracts.CreateSource;
 
 public sealed record GetSourcesQuery() :
     IRequest<ErrorOr<GetSourcesQueryResult>>;

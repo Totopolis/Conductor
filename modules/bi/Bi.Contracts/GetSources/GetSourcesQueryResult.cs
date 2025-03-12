@@ -1,7 +1,7 @@
 ﻿using NodaTime;
-using static Bi.Contracts.CreateDbSource.GetSourcesQueryResult;
+using static Bi.Contracts.CreateSource.GetSourcesQueryResult;
 
-namespace Bi.Contracts.CreateDbSource;
+namespace Bi.Contracts.CreateSource;
 
 public sealed record GetSourcesQueryResult(
     IReadOnlyList<Source> Sources)

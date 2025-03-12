@@ -1,17 +1,16 @@
-﻿using Bi.Domain.DataSources;
+﻿using Bi.Domain.Sources;
 using Domain.Shared;
 
 namespace Bi.Domain.Events;
 
 // TODO: dont mix domain event with sourced event
-public sealed record NeedUpdateDbSource(
-    DbSourceId Id,
+public sealed record NeedUpdateSource(
+    SourceId Id,
     string Name,
     string PrivateNotes,
     string Description,
     string ConnectionString,
-    DbSourceSchemaMode SchemaMode,
-    string ManualSchema) : IDomainEvent, IBiPartitionedEvent
+    string Schema) : IDomainEvent, IBiPartitionedEvent
 {
     public Guid PartitionKey => Id.Value;
 }

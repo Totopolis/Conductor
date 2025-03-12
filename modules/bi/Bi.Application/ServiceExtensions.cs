@@ -41,11 +41,11 @@ public static class ServiceExtensions
 
         cfg.AddPartitionedConsumer<
             NeedSetupConsumer,
-            NeedSetupDbSource>(partitioner);
+            NeedSetupSource>(partitioner);
 
         cfg.AddPartitionedConsumer<
             NeedUpdateConsumer,
-            NeedUpdateDbSource>(partitioner);
+            NeedUpdateSource>(partitioner);
     }
 
     private static void AddPartitionedConsumer<TCONSUMER, TMESSAGE>(

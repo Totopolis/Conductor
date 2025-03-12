@@ -1,7 +1,6 @@
-﻿using Bi.Application.Abstractions;
-using Bi.Domain.Abstractions;
-using Bi.Domain.DataSources;
+﻿using Bi.Domain.Abstractions;
 using Bi.Domain.Events;
+using Bi.Domain.Sources;
 using Domain.Shared;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -9,39 +8,39 @@ using Microsoft.Extensions.Logging;
 namespace Bi.Application.Consumers;
 
 internal sealed class NeedUpdateConsumer :
-    IConsumer<NeedUpdateDbSource>
+    IConsumer<NeedUpdateSource>
 {
-    private readonly IDbSourceRepository _dbSourceRepository;
+    private readonly ISourceRepository _sourceRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<NeedUpdateConsumer> _logger;
 
     public NeedUpdateConsumer(
-        IDbSourceRepository dbSourceRepository,
+        ISourceRepository sourceRepository,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider,
         ILogger<NeedUpdateConsumer> logger)
     {
-        _dbSourceRepository = dbSourceRepository;
+        _sourceRepository = sourceRepository;
         _unitOfWork = unitOfWork;
         _timeProvider = timeProvider;
         _logger = logger;
     }
 
-    public async Task Consume(ConsumeContext<NeedUpdateDbSource> context)
+    public async Task Consume(ConsumeContext<NeedUpdateSource> context)
     {
         var now = _timeProvider.GetInstantNow();
         var msg = context.Message;
-        var source = await _dbSourceRepository.Find(msg.Id, context.CancellationToken);
+        var source = await _sourceRepository.Find(msg.Id, context.CancellationToken);
         if (source is null)
         {
-            _logger.LogError("DbSource id={0} not found", msg.Id);
+            _logger.LogError("Source id={0} not found", msg.Id);
             return;
         }
 
-        if (source.Kind != DbSourceKind.Postgres)
+        if (source.Kind != SourceKind.Postgres)
         {
-            _logger.LogError("DbSource kind={0} not supported", source.Kind.Name);
+            _logger.LogError("Source kind={0} not supported", source.Kind.Name);
             return;
         }
 
@@ -50,10 +49,9 @@ internal sealed class NeedUpdateConsumer :
             privateNotes: msg.PrivateNotes,
             description: msg.Description,
             connectionString: msg.ConnectionString,
-            schemaMode: msg.SchemaMode,
-            schema: msg.ManualSchema);
+            schema: msg.Schema);
 
-        source.SetState(DbSourceState.Setup, now);
+        source.SetState(SourceState.Setup, now);
         await _unitOfWork.SaveChanges(context.CancellationToken);
     }
 }

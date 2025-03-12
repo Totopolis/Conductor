@@ -1,51 +1,51 @@
 ﻿using Bi.Application.Diagnostics;
-using Bi.Contracts.CreateDbSource;
+using Bi.Contracts.CreateSource;
 using Bi.Domain.Abstractions;
-using Bi.Domain.DataSources;
+using Bi.Domain.Sources;
 using Domain.Shared;
 using ErrorOr;
 using MediatR;
 
 namespace Bi.Application.Handlers;
 
-public sealed class UpdateDbSourceHandler : IRequestHandler<
-    UpdateDbSourceCommand,
+public sealed class UpdateSourceHandler : IRequestHandler<
+    UpdateSourceCommand,
     ErrorOr<Success>>
 {
-    private readonly IDbSourceRepository _dbSourceRepository;
+    private readonly ISourceRepository _sourceRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
 
-    public UpdateDbSourceHandler(
-        IDbSourceRepository dbSourceRepository,
+    public UpdateSourceHandler(
+        ISourceRepository sourceRepository,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider)
     {
-        _dbSourceRepository = dbSourceRepository;
+        _sourceRepository = sourceRepository;
         _unitOfWork = unitOfWork;
         _timeProvider = timeProvider;
     }
 
     public async Task<ErrorOr<Success>> Handle(
-        UpdateDbSourceCommand request,
+        UpdateSourceCommand request,
         CancellationToken cancellationToken)
     {
         var now = _timeProvider.GetInstantNow();
 
-        if (!DbSourceId.TryFrom(request.DbSourceId, out var sourceId))
+        if (!SourceId.TryFrom(request.SourceId, out var sourceId))
         {
             return ApplicationErrors.BadIdFormat;
         }
 
-        var source = await _dbSourceRepository.Find(sourceId, cancellationToken);
+        var source = await _sourceRepository.Find(sourceId, cancellationToken);
         if (source is null)
         {
-            return ApplicationErrors.DbSourceNotFound;
+            return ApplicationErrors.SourceNotFound;
         }
 
         if (source.State.IsSetup)
         {
-            return ApplicationErrors.DbSourceBusy;
+            return ApplicationErrors.SourceBusy;
         }
 
         var successOrError = source.RaiseNeedUpdateEventOrError(
@@ -53,8 +53,7 @@ public sealed class UpdateDbSourceHandler : IRequestHandler<
             privateNotes: request.PrivateNotes,
             description: request.Description,
             connectionString: request.ConnectionString,
-            schemaMode: request.SchemaMode.ToString(),
-            schema: request.ManualSchema,
+            schema: request.Schema,
             now: now);
         
         if (successOrError.IsError)

@@ -1,6 +1,6 @@
 ﻿namespace Bi.Contracts.Enums;
 
-public enum DbSourceKind
+public enum SourceKind
 {
     Postgres,
     Clickhouse

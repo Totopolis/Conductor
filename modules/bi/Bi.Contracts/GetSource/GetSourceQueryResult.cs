@@ -1,15 +1,14 @@
 ﻿using Bi.Contracts.Enums;
 using NodaTime;
 
-namespace Bi.Contracts.GetDbSource;
+namespace Bi.Contracts.GetSource;
 
-public sealed record GetDbSourceQueryResult(
-    Guid DbSourceId,
+public sealed record GetSourceQueryResult(
+    Guid SourceId,
     string Name,
     string PrivateNotes,
     string Description,
     string ConnectionString,
-    DbSourceSchemaMode SchemaMode,
     string Schema,
-    DbSourceState State,
+    SourceState State,
     Instant StateChanged);

@@ -1,6 +1,6 @@
 ﻿namespace Bi.Contracts.Enums;
 
-public enum DbSourceState
+public enum SourceState
 {
     Disabled,
     Setup,

@@ -1,17 +1,17 @@
-﻿using Bi.Domain.DataSources;
+﻿using Bi.Domain.Sources;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Bi.Infrastructure.Database;
 
-internal sealed class DbSourceConfiguration : IEntityTypeConfiguration<DbSource>
+internal sealed class SourceConfiguration : IEntityTypeConfiguration<Source>
 {
-    public void Configure(EntityTypeBuilder<DbSource> builder)
+    public void Configure(EntityTypeBuilder<Source> builder)
     {
         builder
-            .ToTable("dbsource")
+            .ToTable("source")
             .HasKey(x => x.Id)
-            .HasName("dbsource_id");
+            .HasName("source_id");
 
         builder
             .Property(x => x.Id)
@@ -21,7 +21,7 @@ internal sealed class DbSourceConfiguration : IEntityTypeConfiguration<DbSource>
         builder
             .Property(x => x.Kind)
             .HasColumnName("kind")
-            .HasConversion(x => x.Value, x => DbSourceKind.FromValue(x));
+            .HasConversion(x => x.Value, x => SourceKind.FromValue(x));
 
         builder
             .Property(x => x.Name)
@@ -29,8 +29,8 @@ internal sealed class DbSourceConfiguration : IEntityTypeConfiguration<DbSource>
             .IsRequired();
 
         builder
-            .Property(x => x.PrivateNotes)
-            .HasColumnName("private_notes")
+            .Property(x => x.UserNotes)
+            .HasColumnName("user_notes")
             .IsRequired();
 
         builder
@@ -44,19 +44,19 @@ internal sealed class DbSourceConfiguration : IEntityTypeConfiguration<DbSource>
             .IsRequired();
 
         builder
-            .Property(x => x.SchemaMode)
-            .HasColumnName("schema_mode")
-            .HasConversion(x => x.Value, x => DbSourceSchemaMode.FromValue(x));
-
-        builder
             .Property(x => x.Schema)
             .HasColumnName("schema")
             .IsRequired();
 
         builder
+            .Property(x => x.AiNotes)
+            .HasColumnName("ai_notes")
+            .IsRequired();
+
+        builder
             .Property(x => x.State)
             .HasColumnName("state")
-            .HasConversion(x => x.Value, x => DbSourceState.FromValue(x));
+            .HasConversion(x => x.Value, x => SourceState.FromValue(x));
 
         builder
             .Property(x => x.StateChanged)

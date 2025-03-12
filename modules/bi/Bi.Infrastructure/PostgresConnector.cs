@@ -42,11 +42,11 @@ internal sealed class PostgresConnector : IPostgresConnector
         }
         catch (NpgsqlException)
         {
-            return ApplicationErrors.DbSourceConnectionFailed;
+            return ApplicationErrors.SourceConnectionFailed;
         }
         catch (Exception)
         {
-            return ApplicationErrors.DbSourceConnectionFailed;
+            return ApplicationErrors.SourceConnectionFailed;
         }
 
         return Result.Success;
@@ -71,11 +71,11 @@ internal sealed class PostgresConnector : IPostgresConnector
         }
         catch (NpgsqlException)
         {
-            return ApplicationErrors.DbSourceConnectionFailed;
+            return ApplicationErrors.SourceConnectionFailed;
         }
         catch (Exception)
         {
-            return ApplicationErrors.DbSourceConnectionFailed;
+            return ApplicationErrors.SourceConnectionFailed;
         }
 
         return "<NO SCHEMA>";
