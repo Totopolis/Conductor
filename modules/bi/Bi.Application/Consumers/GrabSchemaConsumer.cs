@@ -4,6 +4,7 @@ using Bi.Domain.Events;
 using Bi.Domain.Sources;
 using Domain.Shared;
 using MassTransit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Bi.Application.Consumers;
@@ -14,20 +15,20 @@ internal sealed class GrabSchemaConsumer :
     private readonly ISourceRepository _sourceRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
-    private readonly IPostgresConnector _postgresConnector;
+    private readonly IKeyedServiceProvider _serviceProvider;
     private readonly ILogger<GrabSchemaConsumer> _logger;
 
     public GrabSchemaConsumer(
         ISourceRepository sourceRepository,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider,
-        IPostgresConnector postgresConnector,
+        IKeyedServiceProvider serviceProvider,
         ILogger<GrabSchemaConsumer> logger)
     {
         _sourceRepository = sourceRepository;
         _unitOfWork = unitOfWork;
         _timeProvider = timeProvider;
-        _postgresConnector = postgresConnector;
+        _serviceProvider = serviceProvider;
         _logger = logger;
     }
 
@@ -49,7 +50,10 @@ internal sealed class GrabSchemaConsumer :
             return;
         }
 
-        var schemaOrError = await _postgresConnector.GrabSchema(
+        var link = _serviceProvider
+            .GetRequiredKeyedService<ISourceLink>(source.Kind.Name);
+
+        var schemaOrError = await link.GrabSchema(
             source.ConnectionString,
             context.CancellationToken);
 

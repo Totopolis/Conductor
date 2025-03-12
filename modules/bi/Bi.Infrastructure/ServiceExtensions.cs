@@ -4,10 +4,12 @@ using Bi.Application;
 using Bi.Application.Abstractions;
 using Bi.Domain.Abstractions;
 using Bi.Infrastructure.Database;
+using Bi.Infrastructure.SourceLinks;
 using Bi.Infrastructure.Repositories;
 using Bi.Infrastructure.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Bi.Domain.Sources;
 
 namespace Bi.Infrastructure;
 
@@ -38,9 +40,10 @@ public static class ServiceExtensions
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        services.AddTransient<IPostgresConnector, PostgresConnector>();
+        services
+            .AddKeyedTransient<ISourceLink, PostgresLink>(SourceKind.Postgres.Name)
+            .AddKeyedTransient<ISourceLink, ClickhouseLink>(SourceKind.Clickhouse.Name);
 
         return services;
     }
-
 }

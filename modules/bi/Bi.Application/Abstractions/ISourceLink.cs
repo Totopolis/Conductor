@@ -2,7 +2,7 @@
 
 namespace Bi.Application.Abstractions;
 
-public interface IPostgresConnector
+public interface ISourceLink
 {
     Task<ErrorOr<Success>> CheckConnectionStringFormat(string connectionString, CancellationToken ct);
 

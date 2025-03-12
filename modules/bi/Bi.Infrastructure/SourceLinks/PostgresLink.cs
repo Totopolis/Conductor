@@ -3,9 +3,9 @@ using Bi.Application.Diagnostics;
 using ErrorOr;
 using Npgsql;
 
-namespace Bi.Infrastructure;
+namespace Bi.Infrastructure.SourceLinks;
 
-internal sealed class PostgresConnector : IPostgresConnector
+internal sealed class PostgresLink : ISourceLink
 {
     public async Task<ErrorOr<Success>> CheckConnectionStringFormat(
         string connectionString,

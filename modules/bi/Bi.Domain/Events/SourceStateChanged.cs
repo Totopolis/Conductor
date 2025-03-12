@@ -4,7 +4,7 @@ using Domain.Shared;
 namespace Bi.Domain.Events;
 
 // TODO: domain event goes to signalR
-public sealed record SourceStateChanhed(
+public sealed record SourceStateChanged(
     SourceId Id,
     string Name,
     SourceState State) : IDomainEvent, IBiPartitionedEvent

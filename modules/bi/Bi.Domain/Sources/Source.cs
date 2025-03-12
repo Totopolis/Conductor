@@ -137,7 +137,7 @@ public sealed class Source : AggregateRoot<SourceId>
             State = SourceState.Inactive;
             StateChanged = now;
 
-            RaiseDomainEvent(new SourceStateChanhed(
+            RaiseDomainEvent(new SourceStateChanged(
                 Id: Id,
                 Name: Name,
                 State: SourceState.Inactive));
@@ -151,7 +151,7 @@ public sealed class Source : AggregateRoot<SourceId>
             State = SourceState.Ready;
             StateChanged = now;
 
-            RaiseDomainEvent(new SourceStateChanhed(
+            RaiseDomainEvent(new SourceStateChanged(
                 Id: Id,
                 Name: Name,
                 State: SourceState.Ready));
@@ -165,7 +165,7 @@ public sealed class Source : AggregateRoot<SourceId>
             State = SourceState.Lock;
             StateChanged = now;
 
-            RaiseDomainEvent(new SourceStateChanhed(
+            RaiseDomainEvent(new SourceStateChanged(
                 Id: Id,
                 Name: Name,
                 State: SourceState.Lock));

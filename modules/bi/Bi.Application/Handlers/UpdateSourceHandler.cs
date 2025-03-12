@@ -1,7 +1,6 @@
 ﻿using Bi.Application.Diagnostics;
 using Bi.Contracts.CreateSource;
 using Bi.Domain.Abstractions;
-using Bi.Domain.Diagnostics;
 using Bi.Domain.Sources;
 using Domain.Shared;
 using ErrorOr;

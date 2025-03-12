@@ -4,6 +4,7 @@ using Bi.Domain.Events;
 using Bi.Domain.Sources;
 using Domain.Shared;
 using MassTransit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Bi.Application.Consumers;
@@ -14,20 +15,20 @@ internal sealed class ReactivateSourceConsumer :
     private readonly ISourceRepository _sourceRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
-    private readonly IPostgresConnector _postgresConnector;
+    private readonly IKeyedServiceProvider _serviceProvider;
     private readonly ILogger<ReactivateSourceConsumer> _logger;
 
     public ReactivateSourceConsumer(
         ISourceRepository sourceRepository,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider,
-        IPostgresConnector postgresConnector,
+        IKeyedServiceProvider serviceProvider,
         ILogger<ReactivateSourceConsumer> logger)
     {
         _sourceRepository = sourceRepository;
         _unitOfWork = unitOfWork;
         _timeProvider = timeProvider;
-        _postgresConnector = postgresConnector;
+        _serviceProvider = serviceProvider;
         _logger = logger;
     }
 
@@ -49,8 +50,11 @@ internal sealed class ReactivateSourceConsumer :
             return;
         }
 
-        // 1. Try connect to database
-        var successOrError = await _postgresConnector.CheckConnection(
+        var link = _serviceProvider
+            .GetRequiredKeyedService<ISourceLink>(source.Kind.Name);
+
+        // 1. Check connection string and try connect to database
+        var successOrError = await link.CheckConnection(
             source.ConnectionString,
             context.CancellationToken);
 
@@ -62,7 +66,7 @@ internal sealed class ReactivateSourceConsumer :
         }
 
         // 2. Check schema if need
-        // 3. Ask ai about source config
+        // 3. Ask ai about source config (aiNotes)
         source.Enable(now);
 
         await _unitOfWork.SaveChanges(context.CancellationToken);
