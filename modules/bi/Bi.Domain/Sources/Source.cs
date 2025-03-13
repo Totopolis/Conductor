@@ -52,6 +52,8 @@ public sealed class Source : AggregateRoot<SourceId>
 
     public Instant StateChanged { get; private set; }
 
+    public uint Version { get; set; }
+
     public static ErrorOr<Source> CreateNew(
         string kind,
         string name,
@@ -158,13 +160,21 @@ public sealed class Source : AggregateRoot<SourceId>
         }
     }
 
-    private ErrorOr<Success> TryLock(Instant now)
+    private ErrorOr<Success> TryLock(Instant now, uint version)
     {
         // TODO: use timeouted lock to avoid deads
         if (State.IsLock)
         {
             return DomainErrors.SourceBusy;
         }
+
+        // Double concurrency control, second check on unitOfWorks.SaveChanges()
+        if (version < Version)
+        {
+            return DomainErrors.ConcurrencyError;
+        }
+
+        Version = version;
 
         State = SourceState.Lock;
         StateChanged = now;
@@ -177,9 +187,9 @@ public sealed class Source : AggregateRoot<SourceId>
         return Result.Success;
     }
 
-    public ErrorOr<Success> LockAndGrabSchema(Instant now)
+    public ErrorOr<Success> LockAndGrabSchema(Instant now, uint version)
     {
-        var successOrError = TryLock(now);
+        var successOrError = TryLock(now, version);
         if (successOrError.IsError)
         {
             return successOrError;
@@ -192,9 +202,9 @@ public sealed class Source : AggregateRoot<SourceId>
         return Result.Success;
     }
 
-    public ErrorOr<Success> LockAndReactivate(Instant now)
+    public ErrorOr<Success> LockAndReactivate(Instant now, uint version)
     {
-        var successOrError = TryLock(now);
+        var successOrError = TryLock(now, version);
         if (successOrError.IsError)
         {
             return successOrError;
@@ -213,7 +223,8 @@ public sealed class Source : AggregateRoot<SourceId>
         string description,
         string connectionString,
         string schema,
-        Instant now)
+        Instant now,
+        uint version)
     {
         var errors = ValidateFields(
             kind: Kind.Name,
@@ -229,7 +240,7 @@ public sealed class Source : AggregateRoot<SourceId>
             return errors;
         }
 
-        var successOrError = TryLock(now);
+        var successOrError = TryLock(now, version);
         if (successOrError.IsError)
         {
             return successOrError;

@@ -39,7 +39,8 @@ public sealed class UpdateSourceEndpoint :
             UserNotes: req.UserNotes,
             Description: req.Description,
             ConnectionString: req.ConnectionString,
-            Schema: req.Schema);
+            Schema: req.Schema,
+            Version: req.Version);
 
         var successOrError = await _mediator.Send(command, ct);
         _ = successOrError.ValueOrThrow();
@@ -51,5 +52,6 @@ public sealed class UpdateSourceEndpoint :
         string UserNotes,
         string Description,
         string ConnectionString,
-        string Schema);
+        string Schema,
+        uint Version);
 }

@@ -45,7 +45,8 @@ public sealed class GetSourceEndpoint :
             Schema: response.Schema,
             AiNotes: response.AiNotes,
             State: response.State,
-            StateChanged: response.StateChanged));
+            StateChanged: response.StateChanged,
+            Version: response.Version));
     }
     
     public sealed record EndpointResponse(
@@ -57,5 +58,6 @@ public sealed class GetSourceEndpoint :
         string Schema,
         string AiNotes,
         SourceState State,
-        Instant StateChanged);
+        Instant StateChanged,
+        uint Version);
 }

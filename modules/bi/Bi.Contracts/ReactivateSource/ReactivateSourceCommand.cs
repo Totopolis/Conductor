@@ -1,8 +1,8 @@
 ﻿using ErrorOr;
 using MediatR;
 
-namespace Bi.Contracts.GrabSchema;
+namespace Bi.Contracts.ReactivateSource;
 
-public sealed record GrabSchemaCommand(
+public sealed record ReactivateSourceCommand(
     Guid SourceId,
     uint Version) : IRequest<ErrorOr<Success>>;

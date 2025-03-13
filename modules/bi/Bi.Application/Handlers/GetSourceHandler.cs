@@ -48,6 +48,7 @@ public sealed class GetSourceHandler : IRequestHandler<
             Schema: source.Schema,
             AiNotes: source.AiNotes,
             State: state,
-            StateChanged: source.StateChanged);
+            StateChanged: source.StateChanged,
+            Version: source.Version);
     }
 }

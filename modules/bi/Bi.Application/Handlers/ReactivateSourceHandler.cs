@@ -1,5 +1,5 @@
 ﻿using Bi.Application.Diagnostics;
-using Bi.Contracts.GrabSchema;
+using Bi.Contracts.ReactivateSource;
 using Bi.Domain.Abstractions;
 using Bi.Domain.Sources;
 using Domain.Shared;
@@ -8,15 +8,15 @@ using MediatR;
 
 namespace Bi.Application.Handlers;
 
-public sealed class GrabSchemaHandler : IRequestHandler<
-    GrabSchemaCommand,
+public sealed class ReactivateSourceHandler : IRequestHandler<
+    ReactivateSourceCommand,
     ErrorOr<Success>>
 {
     private readonly ISourceRepository _sourceRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
 
-    public GrabSchemaHandler(
+    public ReactivateSourceHandler(
         ISourceRepository sourceRepository,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider)
@@ -27,7 +27,7 @@ public sealed class GrabSchemaHandler : IRequestHandler<
     }
 
     public async Task<ErrorOr<Success>> Handle(
-        GrabSchemaCommand request,
+        ReactivateSourceCommand request,
         CancellationToken cancellationToken)
     {
         if (!SourceId.TryFrom(request.SourceId, out var sourceId))
@@ -41,7 +41,7 @@ public sealed class GrabSchemaHandler : IRequestHandler<
             return ApplicationErrors.SourceNotFound;
         }
 
-        var successOrError = source.LockAndGrabSchema(
+        var successOrError = source.LockAndReactivate(
             now: _timeProvider.GetInstantNow(),
             version: request.Version);
 

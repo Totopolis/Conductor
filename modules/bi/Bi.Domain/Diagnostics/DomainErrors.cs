@@ -23,4 +23,8 @@ public static class DomainErrors
     public static readonly Error SourceBusy = Error.Failure(
         code: "Bi.Domain.SourceBusy",
         description: "Source busy now");
+
+    public static readonly Error ConcurrencyError = Error.Failure(
+        code: "Bi.Domain.ConcurrencyError",
+        description: "Concurrency error");
 }

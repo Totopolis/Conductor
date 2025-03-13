@@ -63,5 +63,13 @@ internal sealed class SourceConfiguration : IEntityTypeConfiguration<Source>
             .HasColumnName("state_changed")
             .HasColumnType(BiDbContext.TimestampType)
             .IsRequired();
+
+        // ATTENTION: Postgres specific method
+        // DANGER: xmin reset on VACUUM edge
+        builder
+            .Property(p => p.Version)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .IsConcurrencyToken();
     }
 }

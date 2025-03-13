@@ -1,38 +1,38 @@
-﻿using Bi.Contracts.GrabSchema;
+﻿using Bi.Contracts.ReactivateSource;
 using FastEndpoints;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using static Conductor.Api.Bi.GrabSchemaEndpoint;
+using static Conductor.Api.Bi.ReactivateSourceEndpoint;
 
 namespace Conductor.Api.Bi;
 
-public sealed class GrabSchemaEndpoint : Endpoint<GrabSchemaRequest>
+public sealed class ReactivateSourceEndpoint : Endpoint<ReactivateSourceRequest>
 {
     private readonly IMediator _mediator;
 
-    public GrabSchemaEndpoint(IMediator mediator)
+    public ReactivateSourceEndpoint(IMediator mediator)
     {
         _mediator = mediator;
     }
 
     public override void Configure()
     {
-        Post("/sources/{id}/schema/grab");
+        Post("/sources/{id}/reactivate");
         AllowAnonymous();
 
         Description(x =>
         {
-            x.WithDescription("Grab schema of data source");
+            x.WithDescription("Reactivate data source");
         });
     }
 
     public override async Task HandleAsync(
-        GrabSchemaRequest request,
+        ReactivateSourceRequest request,
         CancellationToken ct)
     {
         var id = Route<Guid>("id");
 
-        var command = new GrabSchemaCommand(
+        var command = new ReactivateSourceCommand(
             SourceId: id,
             Version: request.Version);
 
@@ -40,5 +40,5 @@ public sealed class GrabSchemaEndpoint : Endpoint<GrabSchemaRequest>
         _ = successOrError.ValueOrThrow();
     }
 
-    public record GrabSchemaRequest(uint Version);
+    public record ReactivateSourceRequest(uint Version);
 }

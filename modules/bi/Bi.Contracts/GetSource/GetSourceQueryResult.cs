@@ -12,4 +12,5 @@ public sealed record GetSourceQueryResult(
     string Schema,
     string AiNotes,
     SourceState State,
-    Instant StateChanged);
+    Instant StateChanged,
+    uint Version);

@@ -49,13 +49,15 @@ public sealed class UpdateSourceHandler : IRequestHandler<
             description: request.Description,
             connectionString: request.ConnectionString,
             schema: request.Schema,
-            now: now);
+            now: now,
+            version: request.Version);
         
         if (successOrError.IsError)
         {
             return successOrError;
         }
 
+        // TODO: handle DbUpdateConcurrencyException  - retry or error
         await _unitOfWork.SaveChanges(cancellationToken);
 
         return Result.Success;

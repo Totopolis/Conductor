@@ -9,4 +9,5 @@ public sealed record UpdateSourceCommand(
     string UserNotes,
     string Description,
     string ConnectionString,
-    string Schema) : IRequest<ErrorOr<Success>>;
+    string Schema,
+    uint Version) : IRequest<ErrorOr<Success>>;
