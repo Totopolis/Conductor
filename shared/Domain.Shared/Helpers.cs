@@ -36,6 +36,9 @@ public static class Helpers
     {
         ZonedDateTime utcZoned = instant.InUtc();
         var firstDayOfMonth = new LocalDate(utcZoned.Year, utcZoned.Month, 1);
+
+        // Получение начала дня в UTC и преобразование в Instant
+        //return firstDayOfMonth.AtStartOfDayInZone(DateTimeZone.Utc).ToInstant();
         return firstDayOfMonth;
     }
 }

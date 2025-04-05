@@ -1,6 +1,5 @@
 ﻿using Application.Shared.Abstractions;
 using FastEndpoints;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Conductor.Api;

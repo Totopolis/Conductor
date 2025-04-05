@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Net;
 
-namespace Conductor.Api.Diagnostics;
+namespace Conductor.Api.Common;
 
 public static class ExceptionHandlerExtensions
 {
@@ -36,13 +36,13 @@ public static class ExceptionHandlerExtensions
             var problem = errorOr.ConvertToProblem(problemInstance);
             ctx.Response.StatusCode = problem.Status;
 
-            var problemTitle = problem.Title;
-            var problemReason = problem.Detail;
+            var errors = string.Join(";", errorOr.Errors.Select(x => x.Code));
+            var problemPlace = $"caller: {errorOr.CallerMemberName}, line: {errorOr.CallerLineNumber}";
 
             logger.LogError(
                 exception: exHandlerFeature.Error,
-                message: "[Application error {@ProblemTitle}] at [{@ProblemInstance}] due to [{@ProblemReason}]",
-                args: [problemTitle, problemInstance, problemReason]);
+                message: "[Application errors {@Errors}] at [{@ProblemInstance}] on [{@ProblemPlace}]",
+                args: [errors, problemInstance, problemPlace]);
 
             await ctx.Response.WriteAsJsonAsync(problem, cancellationToken);
         }
@@ -59,6 +59,7 @@ public static class ExceptionHandlerExtensions
 
             ctx.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
+            // TODO: if env is dev or staging - trace errors to clients
             var problem = new ProblemDetails
             {
                 Instance = problemInstance,

@@ -1,8 +1,9 @@
-﻿using ErrorOr;
+﻿using Conductor.Api.Common;
+using ErrorOr;
 using FastEndpoints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Conductor.Api.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Conductor.Api;
 
@@ -21,11 +22,14 @@ public static class ServiceExtensions
         return services;
     }
 
-    public static T ValueOrThrow<T>(this IErrorOr<T> errorOr)
+    public static T ValueOrThrow<T>(
+        this IErrorOr<T> errorOr,
+        [CallerMemberName] string memberName = "",
+        [CallerLineNumber] int sourceLineNumber = 0)
     {
         if (errorOr.IsError)
         {
-            throw new ErrorOrException(errorOr);
+            throw new ErrorOrException(errorOr, memberName, sourceLineNumber);
         }
 
         return errorOr.Value;

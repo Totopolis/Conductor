@@ -13,20 +13,25 @@ internal class EventBusPublisher : IEventBusPublisher
         _publishEndpoint = publishEndpoint;
     }
 
-    public Task Publish<T>(T message, CancellationToken ct) where T : class
+    public async Task Publish<T>(T message, CancellationToken ct) where T : class
     {
-        return _publishEndpoint.Publish(message, ct);
+        await _publishEndpoint.Publish(message, ct);
     }
 
-    public Task PublishDomainEvent(IDomainEvent domainEvent, CancellationToken ct)
+    public async Task PublishDomainEvent(IDomainEvent domainEvent, CancellationToken ct)
     {
         var domainEventType = domainEvent.GetType();
 
-        return _publishEndpoint.Publish(
+        await _publishEndpoint.Publish(
             message: domainEvent,
             messageType: domainEventType,
             callback: ctx =>
             {
+                /*if (_chatScope.IsInitialized)
+                {
+                    ctx.CorrelationId = _chatScope.CorrelationId;
+                    ctx.ConversationId = _chatScope.CorrelationId;
+                }*/
             });
     }
 }

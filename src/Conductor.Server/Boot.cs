@@ -2,7 +2,7 @@
 using Bi.Application;
 using Bi.Infrastructure;
 using Conductor.Api;
-using Conductor.Api.Diagnostics;
+using Conductor.Api.Common;
 using Conductor.Server.Settings;
 using FastEndpoints;
 using Infrastructure.Shared;

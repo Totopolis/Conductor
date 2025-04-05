@@ -38,6 +38,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bi.Infrastructure", "module
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bi.Contracts", "modules\bi\Bi.Contracts\Bi.Contracts.csproj", "{6629885F-78B8-425A-AE1A-7127F690BF05}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Leaks", "shared\Leaks\Leaks.csproj", "{BAF3EDDD-9491-46E9-86F1-770B0C763490}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -84,6 +86,10 @@ Global
 		{6629885F-78B8-425A-AE1A-7127F690BF05}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6629885F-78B8-425A-AE1A-7127F690BF05}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6629885F-78B8-425A-AE1A-7127F690BF05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BAF3EDDD-9491-46E9-86F1-770B0C763490}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAF3EDDD-9491-46E9-86F1-770B0C763490}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAF3EDDD-9491-46E9-86F1-770B0C763490}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAF3EDDD-9491-46E9-86F1-770B0C763490}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,5 +105,6 @@ Global
 		{5E047079-D29E-45E2-9A91-F4E5E40DEA99} = {6FA09B3A-AE71-4A86-A47D-5FCA44A78B33}
 		{594A68E2-CBA3-4C79-915F-2FCFF3C5C5C9} = {6FA09B3A-AE71-4A86-A47D-5FCA44A78B33}
 		{6629885F-78B8-425A-AE1A-7127F690BF05} = {6FA09B3A-AE71-4A86-A47D-5FCA44A78B33}
+		{BAF3EDDD-9491-46E9-86F1-770B0C763490} = {EF18AC1C-2DE9-4048-9BA3-4DDF6F9C8A1F}
 	EndGlobalSection
 EndGlobal
