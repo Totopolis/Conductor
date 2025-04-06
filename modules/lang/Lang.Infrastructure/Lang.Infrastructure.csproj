@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<ItemGroup>
+	  <PackageReference Include="Betalgo.Ranul.OpenAI" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\shared\Infrastructure.Shared\Infrastructure.Shared.csproj" />
+		<ProjectReference Include="..\Lang.Application\Lang.Application.csproj" />
+	</ItemGroup>
+
+</Project>

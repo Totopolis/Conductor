@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<ItemGroup>
+		<PackageReference Include="ZiggyCreatures.FusionCache" />
+		<PackageReference Include="MassTransit" />
+		<PackageReference Include="FluentValidation" />
+		<PackageReference Include="MediatR" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+		<PackageReference Include="Microsoft.Extensions.Options" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\shared\Application.Shared\Application.Shared.csproj" />
+		<ProjectReference Include="..\Lang.Contracts\Lang.Contracts.csproj" />
+	</ItemGroup>
+
+</Project>

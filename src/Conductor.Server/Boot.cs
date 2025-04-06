@@ -6,6 +6,8 @@ using Conductor.Api.Common;
 using Conductor.Server.Settings;
 using FastEndpoints;
 using Infrastructure.Shared;
+using Lang.Application;
+using Lang.Infrastructure;
 using MassTransit;
 using Microsoft.AspNetCore.Http.Json;
 using NodaTime;
@@ -63,7 +65,7 @@ internal static class Boot
         {
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy(Constants.CorsPolicy, policy =>
+                options.AddPolicy(Api.Common.Constants.CorsPolicy, policy =>
                 {
                     policy
                         .WithOrigins(startupSettings.Cors.Origins.ToArray())
@@ -80,7 +82,9 @@ internal static class Boot
 
         builder.Services
             .AddBiApplicationOptions()
-            .AddBiInfrastructureOptions();
+            .AddBiInfrastructureOptions()
+            .AddLangApplicationOptions()
+            .AddLangInfrastructureOptions();
 
         builder.Services.AddSettingsWithValidation<
             StartupSettings,
@@ -90,7 +94,8 @@ internal static class Boot
         // Services
         builder.Services
             .AddBiApplicationServices(builder.Configuration)
-            .AddBiInfrastructureServices(builder.Configuration);
+            .AddBiInfrastructureServices(builder.Configuration)
+            .AddLangApplicationServices(builder.Configuration);
 
         // Infrastructure shared services: system info & eventBusPublisher
         builder.Services
@@ -171,7 +176,7 @@ internal static class Boot
 
         if (startupSettings.Cors.Enable)
         {
-            app.UseCors(Constants.CorsPolicy);
+            app.UseCors(Api.Common.Constants.CorsPolicy);
         }
 
         return Task.CompletedTask;

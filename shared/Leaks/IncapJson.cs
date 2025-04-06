@@ -8,9 +8,12 @@ namespace Leaks;
 
 public sealed class IncapJson : IEquatable<IncapJson>
 {
-    private static readonly IncapJson _empty = IncapJson.CreateOrThrow("{}");
+    private static readonly IncapJson _empty = new()
+    {
+        Body = "{}",
+        HashCode = 0
+    };
 
-    // TODO: use safe TextEncoderSettings()
     private static readonly JsonSerializerOptions _options = new JsonSerializerOptions
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
@@ -18,29 +21,24 @@ public sealed class IncapJson : IEquatable<IncapJson>
         Converters = { new SortedJsonObjectConverter() }
     };
 
-    private IncapJson(string body)
+    private IncapJson()
     {
-        Body = body;
-
-        if (this == Empty || Body == "{}")
-        {
-            HashCode = 0;
-        }
-        else
-        {
-            HashCode = Body.GetHashCode();
-        }
     }
 
     public static IncapJson Empty => _empty;
 
-    public string Body { get; init; }
+    public required string Body { get; init; }
 
     public int HashCode { get; init; }
 
     public static ErrorOr<IncapJson> CreateOrError(
         IReadOnlyDictionary<string, object> pairs)
     {
+        if (pairs.Count == 0)
+        {
+            return Empty;
+        }
+
         if (!pairs.Select(x => x.Value.GetType()).All(IsSupported))
         {
             return Error.Validation(
@@ -54,7 +52,12 @@ public sealed class IncapJson : IEquatable<IncapJson>
         {
             var body = JsonSerializer.Serialize(pairs, _options);
             var canonicalBody = ToCanonicalJson(body);
-            var obj = new IncapJson(canonicalBody);
+            var obj = new IncapJson()
+            {
+                Body = canonicalBody,
+                HashCode = canonicalBody.GetHashCode()
+            };
+
             return obj;
         }
         catch (JsonException)
@@ -67,8 +70,23 @@ public sealed class IncapJson : IEquatable<IncapJson>
 
     public static IncapJson CreateOrThrow(string body)
     {
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            throw new ArgumentException("body");
+        }
+
         var canonicalBody = ToCanonicalJson(body);
-        var obj = new IncapJson(canonicalBody);
+        if (canonicalBody == "{}")
+        {
+            return Empty;
+        }
+
+        var obj = new IncapJson()
+        {
+            Body = canonicalBody,
+            HashCode = canonicalBody.GetHashCode()
+        };
+
         return obj;
     }
 
